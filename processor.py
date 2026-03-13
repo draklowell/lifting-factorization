@@ -3,7 +3,6 @@ from lifting.matrix_estimator import MatrixEstimator
 from lifting.factorizer import Factorizer, LiftingStep
 from lifting.utils import max_degree, min_degree
 from pywt import Wavelet
-import json
 
 
 class ProxyOutput:
@@ -65,7 +64,7 @@ class Processor:
     def __init__(self, output = None):
         self.output = output
 
-    def process(self, name: str, output_path: str, F=QQ):
+    def process(self, name: str, F=qq):
         wavelet = Wavelet(name)
 
         R = LaurentPolynomialRing(F, names=("z",))
@@ -181,5 +180,4 @@ class Processor:
                 "coefficients": q_vector,
             })
 
-        with open(output_path, "w") as file:
-            json.dump(result, file, indent=4)
+        return result

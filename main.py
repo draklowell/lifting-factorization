@@ -2,6 +2,7 @@ from concurrent.futures import ProcessPoolExecutor, as_completed
 
 from processor import Processor
 import sys
+import json
 
 wavelets = [
     "bior4.4",
@@ -16,7 +17,10 @@ wavelets = [
 
 def run_one(name):
     processor = Processor(sys.stdout)
-    processor.process(name, f"coeffs/{name}.json")
+    result = processor.process(name)
+
+    with open(f"coeffs/{name}.json", "w") as file:
+            json.dump(result, file, indent=4)
 
 with ProcessPoolExecutor() as ex:
     futures = []
