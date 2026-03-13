@@ -49,6 +49,18 @@ def normalize(P, R, output = None):
 
     return P_norm, (delay_up, delay_down)
 
+def get_l2(a, b):
+    accum = 0
+    for poly_a, poly_b in zip(a.list(), b.list()):
+        coeffs_a = poly_a.dict()
+        coeffs_b = poly_b.dict()
+        for m in set(coeffs_a.keys()) | set(coeffs_b.keys()):
+            c_a = coeffs_a.get(m, 0)
+            c_b = coeffs_b.get(m, 0)
+            accum += (c_a - c_b) ** 2
+
+    return sqrt(float(accum))
+
 class Processor:
     def __init__(self, output = None):
         self.output = output
@@ -122,21 +134,17 @@ class Processor:
         assert P_rec == P_est, "Reconstructed matrix does not match the estimated matrix"
         output.write(f"Sanity check: OK\n")
 
-        l2 = 0
-        for poly_err, poly_fp64 in zip(P_err.list(), P_rec_fp64.list()):
-            coeffs_err = poly_err.dict()
-            coeffs_fp64 = poly_fp64.dict()
-            for m in set(coeffs_err.keys()) | set(coeffs_fp64.keys()):
-                c_err = float(coeffs_err.get(m, 0))
-                c_fp64 = float(coeffs_fp64.get(m, 0))
-                l2 += (c_err - c_fp64) ** 2
-        l2 = sqrt(l2)
+        l2_fp64 = get_l2(P_err, P_rec_fp64)
+        l2 = get_l2(P_err, P_rec)
 
-        output.write(f"Reconstruction L2 distance in FP64 mode: {l2}\n")
+        output.write(f"Reconstruction L2 distance in FP64 mode: {l2_fp64}\n")
 
         result = {
             "tap_size": len(wavelet.dec_hi),
-            "approximation_l2": float(l2),
+            "l2": {
+                "fp64": l2_fp64,
+                "qq": l2,
+            },
             "delay": {
                 "even": int(delay_up),
                 "odd": int(delay_down)
@@ -156,12 +164,10 @@ class Processor:
             q_vector = []
             for i in range(min_degree(q), max_degree(q)+1):
                 coeff = q.coefficient(i)
-                # q_vector.append({
-                #     "numerator": int(coeff.numerator()),
-                #     "denominator": int(coeff.denominator())
-                # })
-
-                q_vector.append(float(coeff))
+                q_vector.append({
+                    "numerator": int(coeff.numerator()),
+                    "denominator": int(coeff.denominator())
+                })
 
             if q_vector == [0]:
                 q_vector = []
