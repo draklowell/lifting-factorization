@@ -4,7 +4,7 @@ from concurrent.futures import ProcessPoolExecutor
 from processor import Processor
 import sys
 
-#wavelets = wavelist(kind="discrete")
+# wavelets = wavelist(kind="discrete")
 wavelets = [
     "bior4.4",
     "bior2.2",

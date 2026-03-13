@@ -74,11 +74,6 @@ class Processor:
 
         P_est = MatrixEstimator.solve(P_err, normalize_to=1, output=output)
 
-        err = (P_est - P_err).list()
-        l2 = 0
-        for i in err:
-            l2 += sum(c**2 for c in i)
-
         P, (delay_up, delay_down) = normalize(P_est, R, output)
 
         steps = Factorizer.factorize(P, output=output)
@@ -93,21 +88,51 @@ class Processor:
             ],
         )
 
+        R_fp64 = LaurentPolynomialRing(RR, names=("z",))
+        (z_fp64,) = R_fp64.gens()
+        P_rec_fp64 = matrix(R_fp64, 2, 2, [[1, 0], [0, 1]])
+        P_rec_fp64 *= matrix(
+            R_fp64,
+            [
+                [z_fp64 ** delay_up, 0],
+                [0, z_fp64 ** delay_down],
+            ],
+        )
+
         for q, step in steps:
+            q_fp64 = q.change_ring(RR)
             if step == LiftingStep.PREDICT:
                 P_rec *= matrix(R, [[1, q], [0, 1]])
+                P_rec_fp64 *= matrix(R_fp64, [[1, q_fp64], [0, 1]])
             elif step == LiftingStep.UPDATE:
                 P_rec *= matrix(R, [[1, 0], [q, 1]])
+                P_rec_fp64 *= matrix(R_fp64, [[1, 0], [q_fp64, 1]])
             elif step == LiftingStep.SCALE_EVEN:
                 P_rec *= matrix(R, [[q, 0], [0, 1]])
+                P_rec_fp64 *= matrix(R_fp64, [[q_fp64, 0], [0, 1]])
             elif step == LiftingStep.SCALE_ODD:
                 P_rec *= matrix(R, [[1, 0], [0, q]])
+                P_rec_fp64 *= matrix(R_fp64, [[1, 0], [0, q_fp64]])
             elif step == LiftingStep.SWAP:
                 P_rec *= matrix(R, [[0, 1], [1, 0]])
+                P_rec_fp64 *= matrix(R_fp64, [[0, 1], [1, 0]])
+            else:
+                raise ValueError(f"Unknown lifting step: {step}")
 
         assert P_rec == P_est, "Reconstructed matrix does not match the estimated matrix"
-
         output.write(f"Sanity check: OK\n")
+
+        l2 = 0
+        for poly_err, poly_fp64 in zip(P_err.list(), P_rec_fp64.list()):
+            coeffs_err = poly_err.dict()
+            coeffs_fp64 = poly_fp64.dict()
+            for m in set(coeffs_err.keys()) | set(coeffs_fp64.keys()):
+                c_err = float(coeffs_err.get(m, 0))
+                c_fp64 = float(coeffs_fp64.get(m, 0))
+                l2 += (c_err - c_fp64) ** 2
+        l2 = sqrt(l2)
+
+        output.write(f"Reconstruction L2 distance in FP64 mode: {l2}\n")
 
         result = {
             "tap_size": len(wavelet.dec_hi),
