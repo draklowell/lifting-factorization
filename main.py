@@ -4,7 +4,17 @@ from concurrent.futures import ProcessPoolExecutor
 from processor import Processor
 import sys
 
-wavelet_name = "coif4"
+#wavelets = wavelist(kind="discrete")
+wavelets = [
+    "bior4.4",
+    "bior2.2",
+    "bior1.3",
+    "coif1",
+    "coif2",
+    "sym8",
+    "haar",
+    "db20",
+] + [f"db{i}" for i in range(2, 13)]
 
 def run_one(name):
     processor = Processor(sys.stdout)
@@ -12,17 +22,7 @@ def run_one(name):
 
 with ProcessPoolExecutor() as ex:
     futures = []
-    for name in wavelist(kind="discrete"):
-        if name != wavelet_name:
-            continue
-
-        # if name.startswith("db"):
-        #     num = int(name[2:])
-
-        #     # Skip large db's
-        #     if num >= 20:
-        #         continue
-
+    for name in wavelets:
         futures.append(ex.submit(run_one, name))
 
     for f in futures:

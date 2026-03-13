@@ -98,8 +98,12 @@ class Processor:
                 P_rec *= matrix(R, [[1, q], [0, 1]])
             elif step == LiftingStep.UPDATE:
                 P_rec *= matrix(R, [[1, 0], [q, 1]])
-            elif step == LiftingStep.SCALE:
-                P_rec *= matrix(R, [[q, 0], [0, 1/q]])
+            elif step == LiftingStep.SCALE_EVEN:
+                P_rec *= matrix(R, [[q, 0], [0, 1]])
+            elif step == LiftingStep.SCALE_ODD:
+                P_rec *= matrix(R, [[1, 0], [0, q]])
+            elif step == LiftingStep.SWAP:
+                P_rec *= matrix(R, [[0, 1], [1, 0]])
 
         assert P_rec == P_est, "Reconstructed matrix does not match the estimated matrix"
 
@@ -119,12 +123,26 @@ class Processor:
             step_name = {
                 LiftingStep.PREDICT: "predict",
                 LiftingStep.UPDATE: "update",
-                LiftingStep.SCALE: "scale",
+                LiftingStep.SCALE_EVEN: "scale-even",
+                LiftingStep.SCALE_ODD: "scale-odd",
+                LiftingStep.SWAP: "swap",
             }[step]
 
             q_vector = []
             for i in range(min_degree(q), max_degree(q)+1):
-                q_vector.append(float(q.coefficient(i)))
+                coeff = q.coefficient(i)
+                # q_vector.append({
+                #     "numerator": int(coeff.numerator()),
+                #     "denominator": int(coeff.denominator())
+                # })
+
+                q_vector.append(float(coeff))
+
+            if q_vector == [0]:
+                q_vector = []
+
+            if len(q_vector) == 0 and step in {LiftingStep.PREDICT, LiftingStep.UPDATE}:
+                continue
 
             result["steps"].append({
                 "type": step_name,

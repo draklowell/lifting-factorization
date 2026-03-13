@@ -13,7 +13,9 @@ from enum import Enum
 class LiftingStep(Enum):
     PREDICT = 1
     UPDATE = 2
-    SCALE = 3
+    SCALE_EVEN = 3
+    SCALE_ODD = 4
+    SWAP = 5
 
 
 class Factorizer:
@@ -58,6 +60,7 @@ class Factorizer:
 
         he, ho, ge, go = P[0, 0], P[1, 0], P[0, 1], P[1, 1]
         qs, a = self.euclidean(he, ho)
+
         self.print("Euclidean pre-factorization computed")
 
         self.print(f"GCD degree: {min_degree(a)}")
@@ -72,6 +75,7 @@ class Factorizer:
             #
             Q = matrix(R, 2, 2, [[q, 1], [1, 0]])
             P0 = Q * P0
+
         self.print("P0 matrix reconstructed")
 
         # $P^{(0)} = P^{(0)}_{n}$
@@ -90,19 +94,22 @@ class Factorizer:
         # $s = \frac{g_e - g_e^{(0)}}{h_e}$
         #
         # And same for odd part, thay have to be the same
+        d = det(P0)
+        self.print("Determinant of a reconstructed P0:", d)
+        b = 1/d
 
         ge0, go0 = P0[0][1], P0[1][1]
-        se = ldiv(ge - ge0, he)
-        so = ldiv(go - go0, ho)
+        se = ldiv(ge - b*ge0, he)
+        so = ldiv(go - b*go0, ho)
         assert se == so
         self.print("Recovering coefficient S computed")
 
-        return qs, a, se
+        return qs, a, se, b
 
     @staticmethod
     def factorize(P, output=None) -> list[tuple[object, LiftingStep]]:
         factorizer = Factorizer(output)
-        qs, a, s = factorizer._factorize(P)
+        qs, a, s, b = factorizer._factorize(P)
 
         steps = []
         for i, q in enumerate(qs):
@@ -112,6 +119,15 @@ class Factorizer:
 
             steps.append((q, step_type))
 
-        steps.append((a*a*s, LiftingStep.PREDICT))
-        steps.append((a, LiftingStep.SCALE))
+        if len(qs) % 2 == 1:
+            R = P.base_ring()
+            if output is not None:
+                output.write("Adding swap step to handle odd number of Euclidean steps\n")
+
+            steps.append((R(0), LiftingStep.SWAP))
+
+        steps.append((a*a*s/b, LiftingStep.PREDICT))
+        steps.append((a, LiftingStep.SCALE_EVEN))
+        steps.append((b/a, LiftingStep.SCALE_ODD))
+
         return steps

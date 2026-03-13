@@ -71,6 +71,6 @@ def ldivmod(a, b):
 def ldiv(a, b):
     q, r = ldivmod(a, b)
     if degree(r) >= 0:
-        raise ValueError("Division is not exact, non-zero remainder: r != 0")
+        raise ValueError(f"Division is not exact, non-zero remainder: r = {r} != 0")
 
     return q
