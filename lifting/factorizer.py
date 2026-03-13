@@ -2,91 +2,116 @@ from sage.all import *
 import math
 from lifting.utils import (
     degree,
-    min_degree,
+    min_degree
 )
 from lifting.division import (
     ldiv,
     ldivmod,
 )
+from enum import Enum
+
+class LiftingStep(Enum):
+    PREDICT = 1
+    UPDATE = 2
+    SCALE = 3
 
 
-def euclidean(a, b):
-    result = []
-    if degree(a) < degree(b):
-        a, b = b, a
-        result.append(0) # Swap term
+class Factorizer:
+    def __init__(self, output = None):
+        self.output = output
 
-    # $a_{i+1} = b_i,\quad b_{i+1} = a_i \bmod b_i, \quad q_{i+1} = a_i / b_i$
-    while True:
-        q, r = ldivmod(a, b)
+    def print(self, *args):
+        if self.output is not None:
+            self.output.write(" ".join(map(str, args)) + "\n")
 
-        if degree(r) >= degree(b):
-            raise ValueError("Remainder degree must be less than divisor degree")
+    def euclidean(self, a, b):
+        result = []
+        if degree(a) < degree(b):
+            a, b = b, a
+            result.append(0) # Swap term
 
-        a = b
-        b = r       
-        result.append(q)
-        print("Euclidean step computed:")
-        print(f" Degrees: |q|={degree(q)}, |r|={degree(r)}, |a|-|b|={degree(a) - degree(b)}")
-        l2q = sum(c**2 for c in q.coefficients())
-        print(f" L2 norm: ||q||={math.sqrt(l2q)}")
+        # $a_{i+1} = b_i,\quad b_{i+1} = a_i \bmod b_i, \quad q_{i+1} = a_i / b_i$
+        while True:
+            q, r = ldivmod(a, b)
 
-        if degree(r) == -1:
-            break
+            if degree(r) >= degree(b):
+                raise ValueError("Remainder degree must be less than divisor degree")
 
-    return result, a
+            a = b
+            b = r       
+            result.append(q)
+            self.print("Euclidean step computed:")
+            self.print(f" Degrees: |q|={degree(q)}, |r|={degree(r)}, |a|-|b|={degree(a) - degree(b)}")
+            l2q = sum(c**2 for c in q.coefficients())
+            self.print(f" L2 norm: ||q||={math.sqrt(l2q)}")
 
-def factorize(P):
-    if det(P) != 1:
-        raise ValueError("Matrix must have determinant 1")
+            if degree(r) == -1:
+                break
 
-    R = P.base_ring()
+        return result, a
 
-    he, ho, ge, _ = P[0, 0], P[1, 0], P[0, 1], P[1, 1]
-    qs, a = euclidean(he, ho)
-    print("Euclidean pre-factorization computed")
+    def _factorize(self, P):
+        if det(P) != 1:
+            raise ValueError("Matrix must have determinant 1")
 
-    print(f"GCD: {a}")
+        R = P.base_ring()
 
-    #
-    # $P^{(0)}_0 = \begin{bmatrix} K & 0 \\ 0 & 1/K \end{bmatrix}$
-    #
-    P0 = matrix(R, 2, 2, [[a, 0], [0, 1/a]])
-    for q in reversed(qs):
+        he, ho, ge, go = P[0, 0], P[1, 0], P[0, 1], P[1, 1]
+        qs, a = self.euclidean(he, ho)
+        self.print("Euclidean pre-factorization computed")
+
+        self.print(f"GCD degree: {min_degree(a)}")
+
         #
-        # $P^{(0)}_{i+1} = \begin{bmatrix} q_i & 1 \\ 1 & 0 \end{bmatrix} P^{(0)}_i$
+        # $P^{(0)}_0 = \begin{bmatrix} K & 0 \\ 0 & 1/K \end{bmatrix}$
         #
-        Q = matrix(R, 2, 2, [[q, 1], [1, 0]])
-        P0 = Q * P0
-    print("P0 matrix reconstructed")
+        P0 = matrix(R, 2, 2, [[a, 0], [0, 1/a]])
+        for q in reversed(qs):
+            #
+            # $P^{(0)}_{i+1} = \begin{bmatrix} q_i & 1 \\ 1 & 0 \end{bmatrix} P^{(0)}_i$
+            #
+            Q = matrix(R, 2, 2, [[q, 1], [1, 0]])
+            P0 = Q * P0
+        self.print("P0 matrix reconstructed")
 
-    # $P^{(0)} = P^{(0)}_{n}$
+        # $P^{(0)} = P^{(0)}_{n}$
 
-    #
-    # $P = P^{(0)} \begin{bmatrix} 1 & s \\ 0 & 1 \end{bmatrix}$
-    #
+        #
+        # $P = P^{(0)} \begin{bmatrix} 1 & s \\ 0 & 1 \end{bmatrix}$
+        #
 
-    #
-    # $\begin{bmatrix} h_e & g_e \\ h_o & g_o \end{bmatrix} = \begin{bmatrix} h_e & g_e^{(0)} \\ h_o & g_o^{(0)} \end{bmatrix} \begin{bmatrix} 1 & s \\ 0 & 1 \end{bmatrix}$
-    #
+        #
+        # $\begin{bmatrix} h_e & g_e \\ h_o & g_o \end{bmatrix} = \begin{bmatrix} h_e & g_e^{(0)} \\ h_o & g_o^{(0)} \end{bmatrix} \begin{bmatrix} 1 & s \\ 0 & 1 \end{bmatrix}$
+        #
 
-    # We need to normalize by b, because this factorization
-    # is not consistent with Sweldens et al., we do not assume
-    # $\det P = 1$
+        # $g_e = h_e \cdot s + g_e^{(0)}$
+        # $h_e \cdot s = g_e - g_e^{(0)}$
+        #
+        # $s = \frac{g_e - g_e^{(0)}}{h_e}$
+        #
+        # And same for odd part, thay have to be the same
 
-    #
-    # $\begin{bmatrix} h_e & g_e \\ h_o & g_o \end{bmatrix} = \begin{bmatrix} h_e & g_e^{(0)} \\ h_o & g_o^{(0)} \end{bmatrix} \begin{bmatrix} 1 & s \\ 0 & b \end{bmatrix}$
-    #
+        ge0, go0 = P0[0][1], P0[1][1]
+        se = ldiv(ge - ge0, he)
+        so = ldiv(go - go0, ho)
+        assert se == so
+        self.print("Recovering coefficient S computed")
 
-    # $g_e = h_e \cdot s + b \cdot g_e^{(0)}$
-    # $h_e \cdot s = g_e - b\cdot g_e^{(0)}$
-    #
-    # $s = \frac{g_e - b\cdot g_e^{(0)}}{h_e}$
-    #
-    # And same for odd part, thay have to be the same
+        return qs, a, se
 
-    ge0 = P0[0][1]
-    s = ldiv(ge - ge0, he)
-    print("s computed")
+    @staticmethod
+    def factorize(P, output=None) -> list[tuple[object, LiftingStep]]:
+        factorizer = Factorizer(output)
+        qs, a, s = factorizer._factorize(P)
 
-    return qs, a, s
+        steps = []
+        for i, q in enumerate(qs):
+            step_type = LiftingStep.PREDICT if i % 2 == 0 else LiftingStep.UPDATE
+            if q == 0:
+                continue
+
+            steps.append((q, step_type))
+
+        steps.append((a*a*s, LiftingStep.PREDICT))
+        steps.append((a, LiftingStep.SCALE))
+        return steps

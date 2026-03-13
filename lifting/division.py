@@ -3,6 +3,7 @@ from lifting.utils import (
     from_vector,
     laurent_toeplitz,
     min_degree,
+    max_degree,
     to_vector,
     degree,
 )
@@ -10,8 +11,6 @@ from lifting.utils import (
 
 def try_solve(A, y):
     try:
-        # print(A)
-        # print(y)
         v_p = A.solve_right(y)
     except ValueError:
         return None
@@ -20,27 +19,27 @@ def try_solve(A, y):
 
 # Search for the longest suffix solution
 # $y = Ax$
-def find_solution(A, y):
-    for i in range(A.nrows()):
-        x_candidate = try_solve(A[i:], y[i:])
-        if x_candidate is not None:
-            return x_candidate
+# If direction = True => first left then right
+# otherwise first right then left
+def find_solution(A, y, direction: bool = False):
+    x = None
+    for l in range(1, A.nrows()+1):
+        shorter = l // 2
+        longer = l - shorter
+
+        s = longer if direction else shorter
+        e = A.nrows() - (shorter if direction else longer)
+
+        A_cur = A[:s].stack(A[e:])
+        y_cur = vector(tuple(y[:s]) + tuple(y[e:]))
+
+        x_candidate = try_solve(A_cur, y_cur)
+        if x_candidate is None:
+            return x
+        
+        x = x_candidate
     
-    return None
-    # low = 0
-    # high = A.nrows() - 1
-
-    # while low < high:
-    #     mid = (low + high) // 2
-    #     x_candidate = try_solve(A[mid:], y[mid:])
-    #     if x_candidate is not None:
-    #         high = mid
-    #     else:
-    #         low = mid + 1
-
-    # x = try_solve(A[low:], y[low:])
-
-    # return x
+    return x
 
 def ldivmod(a, b):
     if degree(b) == -1:
@@ -54,7 +53,9 @@ def ldivmod(a, b):
     B = laurent_toeplitz(b, degree(a) + 1, degree(a) - degree(b) + 1, min_degree(b))
     a_v = to_vector(a, min_degree(a), degree(a) + 1)
 
-    q_v = find_solution(B, a_v)
+    direction = -min_degree(a) > max_degree(a)
+
+    q_v = find_solution(B, a_v, direction)
     if q_v is None:
         raise ValueError("No solution found for division")
 

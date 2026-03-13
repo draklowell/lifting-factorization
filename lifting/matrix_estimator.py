@@ -10,10 +10,11 @@ from lifting.utils import (
 
 
 class MatrixEstimator:
-    def __init__(self, H):
+    def __init__(self, H, output = None):
         self.H = H
         self.R = H.base_ring()
         self.F = self.R.base_ring()
+        self.output = output
 
         # lowest degree in 1st vector representation
         self.alpha = min(
@@ -41,6 +42,10 @@ class MatrixEstimator:
         )
 
         self.size_out = self.k - self.l + self.beta - self.alpha + 1
+
+    def print(self, *args):
+        if self.output is not None:
+            self.output.write(" ".join(map(str, args)) + "\n")
 
     # get vector representation of the polynomial
     def isomorphism(self, p):
@@ -90,7 +95,7 @@ class MatrixEstimator:
         norm_squared = sum(abs(c) ** 2 for c in v)
         return norm_squared
 
-    def get_target(self, eps=None, verbose: bool = True):
+    def get_target(self, eps=None):
         det_H = det(self.H)
 
         coeff_max = None
@@ -134,12 +139,11 @@ class MatrixEstimator:
             if eps is None:
                 eps = 0
 
-        if verbose:
-            print(f"Selected monomial: z^{degree_max}, Coefficient: {float(coeff_max)}")
-            print(f"Estimated epsilon: {float(eps)}")
-            print(
-                f"Determinant approximation L2 distance: {sqrt(float(self.l2_norm2_poly(removed)))}"
-            )
+        self.print(f"Selected monomial: z^{degree_max}, Coefficient: {float(coeff_max)}")
+        self.print(f"Estimated epsilon: {float(eps)}")
+        self.print(
+            f"Determinant approximation L2 distance: {sqrt(float(self.l2_norm2_poly(removed)))}"
+        )
 
         return self.isomorphism_out(value)
 
@@ -147,7 +151,7 @@ class MatrixEstimator:
         # Solve the least squares problem X * c = y
         return (X.transpose() * X).solve_right(X.transpose() * y)
 
-    def solve_system(self, T, v, d, normalize_to=None, verbose: bool = True):
+    def solve_system(self, T, v, d, normalize_to=None):
         v_p = T.solve_right(d)
 
         # Columns are basis vectors of the kernel
@@ -158,12 +162,11 @@ class MatrixEstimator:
         c = self.regression(V_g, v - v_p)
 
         v_new = v_p + V_g * c
-        if verbose:
-            print(f"Kernel DoF: {V_g.ncols()}")
-            v_diff = v_new - v
-            print(
-                f"Row approximation L2 distance (non-normalized): {sqrt(float(self.l2_norm2_vector(v_diff)))}"
-            )
+        self.print(f"Kernel DoF: {V_g.ncols()}")
+        v_diff = v_new - v
+        self.print(
+            f"Row approximation L2 distance (non-normalized): {sqrt(float(self.l2_norm2_vector(v_diff)))}"
+        )
 
         if normalize_to is not None:
             norm_coeff = None
@@ -181,14 +184,14 @@ class MatrixEstimator:
             factor = self.F(normalize_to) / norm_coeff
             v_new *= factor
 
-            if verbose:
-                print(f"Normalization factor: {float(factor)}")
+            self.print(f"Normalization factor: {float(factor)}")
+            self.print(f"Row approximation L2 distance (normalized): {sqrt(float(self.l2_norm2_vector(v_new - v)))}")
 
         return v_new
 
     @staticmethod
-    def solve(H, normalize_to, eps=None, verbose: bool = True):
-        estimator = MatrixEstimator(H)
+    def solve(H, normalize_to, eps=None, output=None):
+        estimator = MatrixEstimator(H, output)
         T, v_old = estimator.get_system()
 
         # Perform sanity check
@@ -196,10 +199,10 @@ class MatrixEstimator:
             det(H)
         ), "T * V does not equal isomorphism_out(det(H))"
 
-        d = estimator.get_target(eps=eps, verbose=verbose)
+        d = estimator.get_target(eps=eps)
 
         v_new = estimator.solve_system(
-            T, v_old, d, normalize_to=normalize_to, verbose=verbose
+            T, v_old, d, normalize_to=normalize_to
         )
 
         ho_new, go_new = estimator.isomorphism2_inverse(v_new)
