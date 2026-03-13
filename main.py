@@ -1,10 +1,8 @@
-from pywt import wavelist
-from concurrent.futures import ProcessPoolExecutor
+from concurrent.futures import ProcessPoolExecutor, as_completed
 
 from processor import Processor
 import sys
 
-# wavelets = wavelist(kind="discrete")
 wavelets = [
     "bior4.4",
     "bior2.2",
@@ -18,12 +16,12 @@ wavelets = [
 
 def run_one(name):
     processor = Processor(sys.stdout)
-    return processor.process(name, f"coeffs/{name}.json")
+    processor.process(name, f"coeffs/{name}.json")
 
 with ProcessPoolExecutor() as ex:
     futures = []
     for name in wavelets:
         futures.append(ex.submit(run_one, name))
 
-    for f in futures:
+    for f in as_completed(futures):
         f.result()
