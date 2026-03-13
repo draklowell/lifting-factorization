@@ -64,7 +64,7 @@ class Processor:
     def __init__(self, output = None):
         self.output = output
 
-    def process(self, name: str, F=qq):
+    def process(self, name: str, F=QQ):
         wavelet = Wavelet(name)
 
         R = LaurentPolynomialRing(F, names=("z",))
