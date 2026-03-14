@@ -120,45 +120,419 @@ With L2-norm defined for Laurent polynomials as L2-norm over vector of coefficie
 We consider two $P'$ reconstructed matrices: first by multiplication in $\mathbb{Q}$ field, and second by multiplication after converting all coefficients to `float64`. The following error-rate of factorization was achieved:
 
 ![Error histogram](./figs/l2_histogram.svg)
-
-| Wavelet | $\mathbb{Q}$ | **FP64** | Wavelet | $\mathbb{Q}$ | **FP64** | Wavelet | $\mathbb{Q}$ | **FP64** |
-|---|---|---|---|---|---|---|---|---|
-| bior1.1 | <span style='color: green'>5.75e-17</span> | <span style='color: green'>1.92e-16</span> | bior1.3 | <span style='color: green'>5.80e-17</span> | <span style='color: green'>1.92e-16</span> | bior1.5 | <span style='color: green'>5.84e-17</span> | <span style='color: green'>1.94e-16</span> |
-| bior2.2 | <span style='color: green'>3.50e-17</span> | <span style='color: green'>8.78e-17</span> | bior2.4 | <span style='color: green'>4.28e-17</span> | <span style='color: green'>1.42e-16</span> | bior2.6 | <span style='color: green'>1.20e-16</span> | <span style='color: green'>1.77e-16</span> |
-| bior2.8 | <span style='color: green'>1.13e-16</span> | <span style='color: green'>1.80e-16</span> | bior3.1 | <span style='color: green'>9.97e-17</span> | <span style='color: green'>2.60e-16</span> | bior3.3 | <span style='color: green'>8.47e-17</span> | <span style='color: green'>2.98e-16</span> |
-| bior3.5 | <span style='color: green'>2.20e-16</span> | <span style='color: green'>8.46e-16</span> | bior3.7 | <span style='color: green'>1.91e-16</span> | <span style='color: green'>3.10e-16</span> | bior3.9 | <span style='color: green'>2.48e-16</span> | <span style='color: green'>3.35e-16</span> |
-| bior4.4 | <span style='color: yellow'>1.07e-11</span> | <span style='color: yellow'>1.07e-11</span> | bior5.5 | <span style='color: yellow'>1.01e-11</span> | <span style='color: yellow'>1.01e-11</span> | bior6.8 | <span style='color: yellow'>7.63e-13</span> | <span style='color: yellow'>7.63e-13</span> |
-| coif1 | <span style='color: green'>1.56e-16</span> | <span style='color: green'>5.09e-16</span> | coif2 | <span style='color: green'>1.25e-16</span> | <span style='color: green'>3.64e-15</span> | coif3 | <span style='color: green'>2.51e-16</span> | <span style='color: yellow'>1.08e-14</span> |
-| coif4 | <span style='color: green'>1.90e-16</span> | <span style='color: yellow'>3.88e-14</span> | coif5 | <span style='color: green'>1.10e-15</span> | <span style='color: yellow'>1.58e-13</span> | coif6 | <span style='color: green'>2.87e-15</span> | <span style='color: yellow'>8.12e-13</span> |
-| coif7 | <span style='color: yellow'>2.55e-14</span> | <span style='color: yellow'>3.89e-12</span> | coif8 | <span style='color: yellow'>4.76e-14</span> | <span style='color: yellow'>1.65e-11</span> | coif9 | <span style='color: yellow'>1.59e-13</span> | <span style='color: yellow'>3.53e-11</span> |
-| coif10 | <span style='color: yellow'>4.94e-13</span> | <span style='color: yellow'>7.40e-10</span> | coif11 | <span style='color: yellow'>1.71e-12</span> | <span style='color: yellow'>1.78e-09</span> | coif12 | <span style='color: yellow'>3.74e-12</span> | <span style='color: yellow'>5.09e-09</span> |
-| coif13 | <span style='color: yellow'>3.65e-11</span> | <span style='color: yellow'>3.42e-08</span> | coif14 | <span style='color: yellow'>1.12e-10</span> | <span style='color: red'>1.99e-07</span> | coif15 | <span style='color: yellow'>2.41e-10</span> | <span style='color: red'>1.97e-07</span> |
-| coif16 | <span style='color: yellow'>9.61e-10</span> | <span style='color: red'>1.48e-06</span> | coif17 | <span style='color: yellow'>1.83e-09</span> | <span style='color: red'>2.91e-06</span> | db1 | <span style='color: green'>5.75e-17</span> | <span style='color: green'>1.92e-16</span> |
-| db2 | <span style='color: green'>1.37e-16</span> | <span style='color: green'>5.70e-16</span> | db3 | <span style='color: green'>1.30e-16</span> | <span style='color: green'>1.24e-15</span> | db4 | <span style='color: green'>1.21e-16</span> | <span style='color: green'>1.92e-15</span> |
-| db5 | <span style='color: green'>7.51e-16</span> | <span style='color: yellow'>1.07e-14</span> | db6 | <span style='color: green'>1.26e-15</span> | <span style='color: green'>8.40e-15</span> | db7 | <span style='color: green'>6.98e-15</span> | <span style='color: yellow'>1.76e-14</span> |
-| db8 | <span style='color: yellow'>7.19e-14</span> | <span style='color: yellow'>7.97e-14</span> | db9 | <span style='color: yellow'>3.60e-12</span> | <span style='color: yellow'>3.60e-12</span> | db10 | <span style='color: yellow'>1.37e-11</span> | <span style='color: yellow'>1.37e-11</span> |
-| db11 | <span style='color: yellow'>3.37e-10</span> | <span style='color: yellow'>3.37e-10</span> | db12 | <span style='color: yellow'>1.73e-09</span> | <span style='color: yellow'>1.73e-09</span> | db13 | <span style='color: red'>1.12e-06</span> | <span style='color: red'>1.12e-06</span> |
-| db14 | <span style='color: red'>1.07e-04</span> | <span style='color: red'>1.07e-04</span> | db15 | <span style='color: red'>5.58e-03</span> | <span style='color: red'>5.58e-03</span> | db16 | <span style='color: red'>3.75e-02</span> | <span style='color: red'>3.75e-02</span> |
-| db17 | <span style='color: red'>1.76e-01</span> | <span style='color: red'>1.76e-01</span> | db18 | <span style='color: red'>1.68e-01</span> | <span style='color: red'>1.68e-01</span> | db19 | <span style='color: red'>1.59e-01</span> | <span style='color: red'>1.59e-01</span> |
-| db20 | <span style='color: red'>1.51e-01</span> | <span style='color: red'>1.51e-01</span> | db21 | <span style='color: red'>1.44e-01</span> | <span style='color: red'>1.44e-01</span> | db22 | <span style='color: red'>1.38e-01</span> | <span style='color: red'>1.38e-01</span> |
-| db23 | <span style='color: red'>1.32e-01</span> | <span style='color: red'>1.32e-01</span> | db24 | <span style='color: red'>1.26e-01</span> | <span style='color: red'>1.26e-01</span> | db25 | <span style='color: red'>1.21e-01</span> | <span style='color: red'>1.21e-01</span> |
-| db26 | <span style='color: red'>1.15e-01</span> | <span style='color: red'>1.15e-01</span> | db27 | <span style='color: red'>9.02e-02</span> | <span style='color: red'>9.02e-02</span> | db28 | <span style='color: red'>2.19e-01</span> | <span style='color: red'>2.19e-01</span> |
-| db29 | <span style='color: red'>2.32e-01</span> | <span style='color: red'>2.32e-01</span> | db30 | <span style='color: red'>2.11e-01</span> | <span style='color: red'>2.11e-01</span> | db31 | <span style='color: red'>2.04e-01</span> | <span style='color: red'>2.04e-01</span> |
-| db32 | <span style='color: red'>1.97e-01</span> | <span style='color: red'>1.97e-01</span> | db33 | <span style='color: red'>1.91e-01</span> | <span style='color: red'>1.91e-01</span> | db34 | <span style='color: red'>1.85e-01</span> | <span style='color: red'>1.85e-01</span> |
-| db35 | <span style='color: red'>1.80e-01</span> | <span style='color: red'>1.80e-01</span> | db36 | <span style='color: red'>1.73e-01</span> | <span style='color: red'>1.73e-01</span> | db37 | <span style='color: red'>4.49e-01</span> | <span style='color: red'>4.49e-01</span> |
-| db38 | <span style='color: red'>2.42e-01</span> | <span style='color: red'>2.42e-01</span> | dmey | <span style='color: red'>6.64e-01</span> | <span style='color: red'>6.64e-01</span> | haar | <span style='color: green'>5.75e-17</span> | <span style='color: green'>1.92e-16</span> |
-| rbio1.1 | <span style='color: green'>5.75e-17</span> | <span style='color: green'>1.92e-16</span> | rbio1.3 | <span style='color: green'>5.80e-17</span> | <span style='color: green'>1.92e-16</span> | rbio1.5 | <span style='color: green'>5.84e-17</span> | <span style='color: green'>1.94e-16</span> |
-| rbio2.2 | <span style='color: green'>3.11e-17</span> | <span style='color: green'>2.22e-16</span> | rbio2.4 | <span style='color: green'>3.90e-17</span> | <span style='color: green'>1.36e-16</span> | rbio2.6 | <span style='color: green'>9.92e-17</span> | <span style='color: green'>1.42e-16</span> |
-| rbio2.8 | <span style='color: green'>1.49e-16</span> | <span style='color: green'>1.62e-16</span> | rbio3.1 | <span style='color: green'>9.97e-17</span> | <span style='color: green'>2.73e-16</span> | rbio3.3 | <span style='color: green'>8.47e-17</span> | <span style='color: green'>2.98e-16</span> |
-| rbio3.5 | <span style='color: green'>2.20e-16</span> | <span style='color: green'>8.46e-16</span> | rbio3.7 | <span style='color: green'>1.91e-16</span> | <span style='color: green'>3.10e-16</span> | rbio3.9 | <span style='color: green'>2.48e-16</span> | <span style='color: green'>3.35e-16</span> |
-| rbio4.4 | <span style='color: yellow'>2.74e-12</span> | <span style='color: yellow'>2.74e-12</span> | rbio5.5 | <span style='color: yellow'>1.09e-08</span> | <span style='color: yellow'>1.09e-08</span> | rbio6.8 | <span style='color: yellow'>3.81e-13</span> | <span style='color: yellow'>3.81e-13</span> |
-| sym2 | <span style='color: yellow'>8.77e-13</span> | <span style='color: yellow'>8.77e-13</span> | sym3 | <span style='color: yellow'>1.60e-11</span> | <span style='color: yellow'>1.60e-11</span> | sym4 | <span style='color: yellow'>1.95e-12</span> | <span style='color: yellow'>1.95e-12</span> |
-| sym5 | <span style='color: yellow'>7.35e-13</span> | <span style='color: yellow'>7.35e-13</span> | sym6 | <span style='color: yellow'>5.32e-12</span> | <span style='color: yellow'>5.32e-12</span> | sym7 | <span style='color: yellow'>6.93e-10</span> | <span style='color: yellow'>6.93e-10</span> |
-| sym8 | <span style='color: yellow'>3.10e-11</span> | <span style='color: yellow'>3.10e-11</span> | sym9 | <span style='color: yellow'>1.87e-11</span> | <span style='color: yellow'>1.87e-11</span> | sym10 | <span style='color: yellow'>5.66e-12</span> | <span style='color: yellow'>5.66e-12</span> |
-| sym11 | <span style='color: yellow'>2.59e-10</span> | <span style='color: yellow'>2.59e-10</span> | sym12 | <span style='color: yellow'>2.20e-12</span> | <span style='color: yellow'>2.20e-12</span> | sym13 | <span style='color: yellow'>8.37e-09</span> | <span style='color: yellow'>8.37e-09</span> |
-| sym14 | <span style='color: yellow'>1.78e-12</span> | <span style='color: yellow'>1.78e-12</span> | sym15 | <span style='color: yellow'>1.65e-11</span> | <span style='color: yellow'>1.65e-11</span> | sym16 | <span style='color: yellow'>2.87e-11</span> | <span style='color: yellow'>2.87e-11</span> |
-| sym17 | <span style='color: yellow'>4.58e-09</span> | <span style='color: yellow'>4.58e-09</span> | sym18 | <span style='color: yellow'>2.18e-10</span> | <span style='color: yellow'>2.18e-10</span> | sym19 | <span style='color: yellow'>4.16e-11</span> | <span style='color: yellow'>4.16e-11</span> |
-| sym20 | <span style='color: yellow'>3.05e-10</span> | <span style='color: yellow'>3.05e-10</span> |
+<table>
+  <thead>
+    <tr>
+      <th>Wavelet</th>
+      <th>&#x211A;</th>
+      <th><strong>FP64</strong></th>
+      <th>Wavelet</th>
+      <th>&#x211A;</th>
+      <th><strong>FP64</strong></th>
+      <th>Wavelet</th>
+      <th>&#x211A;</th>
+      <th><strong>FP64</strong></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>bior1.1</td>
+      <td style='background-color: green'>5.75e-17</td>
+      <td style='background-color: green'>1.92e-16</td>
+      <td>bior1.3</td>
+      <td style='background-color: green'>5.80e-17</td>
+      <td style='background-color: green'>1.92e-16</td>
+      <td>bior1.5</td>
+      <td style='background-color: green'>5.84e-17</td>
+      <td style='background-color: green'>1.94e-16</td>
+    </tr>
+    <tr>
+      <td>bior2.2</td>
+      <td style='background-color: green'>3.50e-17</td>
+      <td style='background-color: green'>8.78e-17</td>
+      <td>bior2.4</td>
+      <td style='background-color: green'>4.28e-17</td>
+      <td style='background-color: green'>1.42e-16</td>
+      <td>bior2.6</td>
+      <td style='background-color: green'>1.20e-16</td>
+      <td style='background-color: green'>1.77e-16</td>
+    </tr>
+    <tr>
+      <td>bior2.8</td>
+      <td style='background-color: green'>1.13e-16</td>
+      <td style='background-color: green'>1.80e-16</td>
+      <td>bior3.1</td>
+      <td style='background-color: green'>9.97e-17</td>
+      <td style='background-color: green'>2.60e-16</td>
+      <td>bior3.3</td>
+      <td style='background-color: green'>8.47e-17</td>
+      <td style='background-color: green'>2.98e-16</td>
+    </tr>
+    <tr>
+      <td>bior3.5</td>
+      <td style='background-color: green'>2.20e-16</td>
+      <td style='background-color: green'>8.46e-16</td>
+      <td>bior3.7</td>
+      <td style='background-color: green'>1.91e-16</td>
+      <td style='background-color: green'>3.10e-16</td>
+      <td>bior3.9</td>
+      <td style='background-color: green'>2.48e-16</td>
+      <td style='background-color: green'>3.35e-16</td>
+    </tr>
+    <tr>
+      <td>bior4.4</td>
+      <td style='background-color: orange'>1.07e-11</td>
+      <td style='background-color: orange'>1.07e-11</td>
+      <td>bior5.5</td>
+      <td style='background-color: orange'>1.01e-11</td>
+      <td style='background-color: orange'>1.01e-11</td>
+      <td>bior6.8</td>
+      <td style='background-color: orange'>7.63e-13</td>
+      <td style='background-color: orange'>7.63e-13</td>
+    </tr>
+    <tr>
+      <td>coif1</td>
+      <td style='background-color: green'>1.56e-16</td>
+      <td style='background-color: green'>5.09e-16</td>
+      <td>coif2</td>
+      <td style='background-color: green'>1.25e-16</td>
+      <td style='background-color: green'>3.64e-15</td>
+      <td>coif3</td>
+      <td style='background-color: green'>2.51e-16</td>
+      <td style='background-color: orange'>1.08e-14</td>
+    </tr>
+    <tr>
+      <td>coif4</td>
+      <td style='background-color: green'>1.90e-16</td>
+      <td style='background-color: orange'>3.88e-14</td>
+      <td>coif5</td>
+      <td style='background-color: green'>1.10e-15</td>
+      <td style='background-color: orange'>1.58e-13</td>
+      <td>coif6</td>
+      <td style='background-color: green'>2.87e-15</td>
+      <td style='background-color: orange'>8.12e-13</td>
+    </tr>
+    <tr>
+      <td>coif7</td>
+      <td style='background-color: orange'>2.55e-14</td>
+      <td style='background-color: orange'>3.89e-12</td>
+      <td>coif8</td>
+      <td style='background-color: orange'>4.76e-14</td>
+      <td style='background-color: orange'>1.65e-11</td>
+      <td>coif9</td>
+      <td style='background-color: orange'>1.59e-13</td>
+      <td style='background-color: orange'>3.53e-11</td>
+    </tr>
+    <tr>
+      <td>coif10</td>
+      <td style='background-color: orange'>4.94e-13</td>
+      <td style='background-color: orange'>7.40e-10</td>
+      <td>coif11</td>
+      <td style='background-color: orange'>1.71e-12</td>
+      <td style='background-color: orange'>1.78e-09</td>
+      <td>coif12</td>
+      <td style='background-color: orange'>3.74e-12</td>
+      <td style='background-color: orange'>5.09e-09</td>
+    </tr>
+    <tr>
+      <td>coif13</td>
+      <td style='background-color: orange'>3.65e-11</td>
+      <td style='background-color: orange'>3.42e-08</td>
+      <td>coif14</td>
+      <td style='background-color: orange'>1.12e-10</td>
+      <td style='background-color: red'>1.99e-07</td>
+      <td>coif15</td>
+      <td style='background-color: orange'>2.41e-10</td>
+      <td style='background-color: red'>1.97e-07</td>
+    </tr>
+    <tr>
+      <td>coif16</td>
+      <td style='background-color: orange'>9.61e-10</td>
+      <td style='background-color: red'>1.48e-06</td>
+      <td>coif17</td>
+      <td style='background-color: orange'>1.83e-09</td>
+      <td style='background-color: red'>2.91e-06</td>
+      <td>db1</td>
+      <td style='background-color: green'>5.75e-17</td>
+      <td style='background-color: green'>1.92e-16</td>
+    </tr>
+    <tr>
+      <td>db2</td>
+      <td style='background-color: green'>1.37e-16</td>
+      <td style='background-color: green'>5.70e-16</td>
+      <td>db3</td>
+      <td style='background-color: green'>1.30e-16</td>
+      <td style='background-color: green'>1.24e-15</td>
+      <td>db4</td>
+      <td style='background-color: green'>1.21e-16</td>
+      <td style='background-color: green'>1.92e-15</td>
+    </tr>
+    <tr>
+      <td>db5</td>
+      <td style='background-color: green'>7.51e-16</td>
+      <td style='background-color: orange'>1.07e-14</td>
+      <td>db6</td>
+      <td style='background-color: green'>1.26e-15</td>
+      <td style='background-color: green'>8.40e-15</td>
+      <td>db7</td>
+      <td style='background-color: green'>6.98e-15</td>
+      <td style='background-color: orange'>1.76e-14</td>
+    </tr>
+    <tr>
+      <td>db8</td>
+      <td style='background-color: orange'>7.19e-14</td>
+      <td style='background-color: orange'>7.97e-14</td>
+      <td>db9</td>
+      <td style='background-color: orange'>3.60e-12</td>
+      <td style='background-color: orange'>3.60e-12</td>
+      <td>db10</td>
+      <td style='background-color: orange'>1.37e-11</td>
+      <td style='background-color: orange'>1.37e-11</td>
+    </tr>
+    <tr>
+      <td>db11</td>
+      <td style='background-color: orange'>3.37e-10</td>
+      <td style='background-color: orange'>3.37e-10</td>
+      <td>db12</td>
+      <td style='background-color: orange'>1.73e-09</td>
+      <td style='background-color: orange'>1.73e-09</td>
+      <td>db13</td>
+      <td style='background-color: red'>1.12e-06</td>
+      <td style='background-color: red'>1.12e-06</td>
+    </tr>
+    <tr>
+      <td>db14</td>
+      <td style='background-color: red'>1.07e-04</td>
+      <td style='background-color: red'>1.07e-04</td>
+      <td>db15</td>
+      <td style='background-color: red'>5.58e-03</td>
+      <td style='background-color: red'>5.58e-03</td>
+      <td>db16</td>
+      <td style='background-color: red'>3.75e-02</td>
+      <td style='background-color: red'>3.75e-02</td>
+    </tr>
+    <tr>
+      <td>db17</td>
+      <td style='background-color: red'>1.76e-01</td>
+      <td style='background-color: red'>1.76e-01</td>
+      <td>db18</td>
+      <td style='background-color: red'>1.68e-01</td>
+      <td style='background-color: red'>1.68e-01</td>
+      <td>db19</td>
+      <td style='background-color: red'>1.59e-01</td>
+      <td style='background-color: red'>1.59e-01</td>
+    </tr>
+    <tr>
+      <td>db20</td>
+      <td style='background-color: red'>1.51e-01</td>
+      <td style='background-color: red'>1.51e-01</td>
+      <td>db21</td>
+      <td style='background-color: red'>1.44e-01</td>
+      <td style='background-color: red'>1.44e-01</td>
+      <td>db22</td>
+      <td style='background-color: red'>1.38e-01</td>
+      <td style='background-color: red'>1.38e-01</td>
+    </tr>
+    <tr>
+      <td>db23</td>
+      <td style='background-color: red'>1.32e-01</td>
+      <td style='background-color: red'>1.32e-01</td>
+      <td>db24</td>
+      <td style='background-color: red'>1.26e-01</td>
+      <td style='background-color: red'>1.26e-01</td>
+      <td>db25</td>
+      <td style='background-color: red'>1.21e-01</td>
+      <td style='background-color: red'>1.21e-01</td>
+    </tr>
+    <tr>
+      <td>db26</td>
+      <td style='background-color: red'>1.15e-01</td>
+      <td style='background-color: red'>1.15e-01</td>
+      <td>db27</td>
+      <td style='background-color: red'>9.02e-02</td>
+      <td style='background-color: red'>9.02e-02</td>
+      <td>db28</td>
+      <td style='background-color: red'>2.19e-01</td>
+      <td style='background-color: red'>2.19e-01</td>
+    </tr>
+    <tr>
+      <td>db29</td>
+      <td style='background-color: red'>2.32e-01</td>
+      <td style='background-color: red'>2.32e-01</td>
+      <td>db30</td>
+      <td style='background-color: red'>2.11e-01</td>
+      <td style='background-color: red'>2.11e-01</td>
+      <td>db31</td>
+      <td style='background-color: red'>2.04e-01</td>
+      <td style='background-color: red'>2.04e-01</td>
+    </tr>
+    <tr>
+      <td>db32</td>
+      <td style='background-color: red'>1.97e-01</td>
+      <td style='background-color: red'>1.97e-01</td>
+      <td>db33</td>
+      <td style='background-color: red'>1.91e-01</td>
+      <td style='background-color: red'>1.91e-01</td>
+      <td>db34</td>
+      <td style='background-color: red'>1.85e-01</td>
+      <td style='background-color: red'>1.85e-01</td>
+    </tr>
+    <tr>
+      <td>db35</td>
+      <td style='background-color: red'>1.80e-01</td>
+      <td style='background-color: red'>1.80e-01</td>
+      <td>db36</td>
+      <td style='background-color: red'>1.73e-01</td>
+      <td style='background-color: red'>1.73e-01</td>
+      <td>db37</td>
+      <td style='background-color: red'>4.49e-01</td>
+      <td style='background-color: red'>4.49e-01</td>
+    </tr>
+    <tr>
+      <td>db38</td>
+      <td style='background-color: red'>2.42e-01</td>
+      <td style='background-color: red'>2.42e-01</td>
+      <td>dmey</td>
+      <td style='background-color: red'>6.64e-01</td>
+      <td style='background-color: red'>6.64e-01</td>
+      <td>haar</td>
+      <td style='background-color: green'>5.75e-17</td>
+      <td style='background-color: green'>1.92e-16</td>
+    </tr>
+    <tr>
+      <td>rbio1.1</td>
+      <td style='background-color: green'>5.75e-17</td>
+      <td style='background-color: green'>1.92e-16</td>
+      <td>rbio1.3</td>
+      <td style='background-color: green'>5.80e-17</td>
+      <td style='background-color: green'>1.92e-16</td>
+      <td>rbio1.5</td>
+      <td style='background-color: green'>5.84e-17</td>
+      <td style='background-color: green'>1.94e-16</td>
+    </tr>
+    <tr>
+      <td>rbio2.2</td>
+      <td style='background-color: green'>3.11e-17</td>
+      <td style='background-color: green'>2.22e-16</td>
+      <td>rbio2.4</td>
+      <td style='background-color: green'>3.90e-17</td>
+      <td style='background-color: green'>1.36e-16</td>
+      <td>rbio2.6</td>
+      <td style='background-color: green'>9.92e-17</td>
+      <td style='background-color: green'>1.42e-16</td>
+    </tr>
+    <tr>
+      <td>rbio2.8</td>
+      <td style='background-color: green'>1.49e-16</td>
+      <td style='background-color: green'>1.62e-16</td>
+      <td>rbio3.1</td>
+      <td style='background-color: green'>9.97e-17</td>
+      <td style='background-color: green'>2.73e-16</td>
+      <td>rbio3.3</td>
+      <td style='background-color: green'>8.47e-17</td>
+      <td style='background-color: green'>2.98e-16</td>
+    </tr>
+    <tr>
+      <td>rbio3.5</td>
+      <td style='background-color: green'>2.20e-16</td>
+      <td style='background-color: green'>8.46e-16</td>
+      <td>rbio3.7</td>
+      <td style='background-color: green'>1.91e-16</td>
+      <td style='background-color: green'>3.10e-16</td>
+      <td>rbio3.9</td>
+      <td style='background-color: green'>2.48e-16</td>
+      <td style='background-color: green'>3.35e-16</td>
+    </tr>
+    <tr>
+      <td>rbio4.4</td>
+      <td style='background-color: orange'>2.74e-12</td>
+      <td style='background-color: orange'>2.74e-12</td>
+      <td>rbio5.5</td>
+      <td style='background-color: orange'>1.09e-08</td>
+      <td style='background-color: orange'>1.09e-08</td>
+      <td>rbio6.8</td>
+      <td style='background-color: orange'>3.81e-13</td>
+      <td style='background-color: orange'>3.81e-13</td>
+    </tr>
+    <tr>
+      <td>sym2</td>
+      <td style='background-color: orange'>8.77e-13</td>
+      <td style='background-color: orange'>8.77e-13</td>
+      <td>sym3</td>
+      <td style='background-color: orange'>1.60e-11</td>
+      <td style='background-color: orange'>1.60e-11</td>
+      <td>sym4</td>
+      <td style='background-color: orange'>1.95e-12</td>
+      <td style='background-color: orange'>1.95e-12</td>
+    </tr>
+    <tr>
+      <td>sym5</td>
+      <td style='background-color: orange'>7.35e-13</td>
+      <td style='background-color: orange'>7.35e-13</td>
+      <td>sym6</td>
+      <td style='background-color: orange'>5.32e-12</td>
+      <td style='background-color: orange'>5.32e-12</td>
+      <td>sym7</td>
+      <td style='background-color: orange'>6.93e-10</td>
+      <td style='background-color: orange'>6.93e-10</td>
+    </tr>
+    <tr>
+      <td>sym8</td>
+      <td style='background-color: orange'>3.10e-11</td>
+      <td style='background-color: orange'>3.10e-11</td>
+      <td>sym9</td>
+      <td style='background-color: orange'>1.87e-11</td>
+      <td style='background-color: orange'>1.87e-11</td>
+      <td>sym10</td>
+      <td style='background-color: orange'>5.66e-12</td>
+      <td style='background-color: orange'>5.66e-12</td>
+    </tr>
+    <tr>
+      <td>sym11</td>
+      <td style='background-color: orange'>2.59e-10</td>
+      <td style='background-color: orange'>2.59e-10</td>
+      <td>sym12</td>
+      <td style='background-color: orange'>2.20e-12</td>
+      <td style='background-color: orange'>2.20e-12</td>
+      <td>sym13</td>
+      <td style='background-color: orange'>8.37e-09</td>
+      <td style='background-color: orange'>8.37e-09</td>
+    </tr>
+    <tr>
+      <td>sym14</td>
+      <td style='background-color: orange'>1.78e-12</td>
+      <td style='background-color: orange'>1.78e-12</td>
+      <td>sym15</td>
+      <td style='background-color: orange'>1.65e-11</td>
+      <td style='background-color: orange'>1.65e-11</td>
+      <td>sym16</td>
+      <td style='background-color: orange'>2.87e-11</td>
+      <td style='background-color: orange'>2.87e-11</td>
+    </tr>
+    <tr>
+      <td>sym17</td>
+      <td style='background-color: orange'>4.58e-09</td>
+      <td style='background-color: orange'>4.58e-09</td>
+      <td>sym18</td>
+      <td style='background-color: orange'>2.18e-10</td>
+      <td style='background-color: orange'>2.18e-10</td>
+      <td>sym19</td>
+      <td style='background-color: orange'>4.16e-11</td>
+      <td style='background-color: orange'>4.16e-11</td>
+    </tr>
+    <tr>
+      <td>sym20</td>
+      <td style='background-color: orange'>3.05e-10</td>
+      <td style='background-color: orange'>3.05e-10</td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+  </tbody>
+</table>
 
 The above table is colored as: `green` if $L_2 < 10^{-14}$, `yellow` if $L_2 < 10^{-7}$ and otherwise `red`.
 
