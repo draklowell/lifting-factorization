@@ -52,23 +52,33 @@ $$
 
 Those steps can be described as right-multiplication by a matrix $Q$ that depends on polynomial $q$:
 
-- **Predict**:
-  $$Q_i = \begin{bmatrix}1 & q_i \\ 0 & 1\end{bmatrix}$$
-  Predict odd from even;
-- **Predict**:
-  $$Q_i = \begin{bmatrix}1 & 0 \\ q_i & 1\end{bmatrix}$$
-  Update even from odd;
-- **Scale Even**:
-  $$Q_i = \begin{bmatrix}q & 0 \\ 0 & 1\end{bmatrix}$$
-  Scale even by a constant factor (note: $q$ is a zero-degree constant polynomial);
-- **Scale Odd**:
-  $$Q_i = \begin{bmatrix}1 & 0 \\ 0 & q\end{bmatrix}$$
-  Scale odd by a constant factor (note: $q$ is a zero-degree constant polynomial);
-- **Swap**:
-  $$Q_i = \begin{bmatrix}0 & 1 \\ 1 & 0\end{bmatrix}$$
-  Swap even and odd (note: no dependency on q).
+- **Predict**: predict odd from even
+$$
+Q_i = \begin{bmatrix}1 & q_i \\
+0 & 1\end{bmatrix}
+$$
+- **Update**: update even from odd
+$$
+Q_i = \begin{bmatrix}1 & 0 \\
+q_i & 1\end{bmatrix}
+$$
+- **Scale Even**: scale even by a constant factor (note: $q$ is a zero-degree constant polynomial)
+$$
+Q_i = \begin{bmatrix}q & 0 \\
+0 & 1\end{bmatrix}
+$$
+- **Scale Odd**: scale odd by a constant factor (note: $q$ is a zero-degree constant polynomial)
+$$
+Q_i = \begin{bmatrix}1 & 0 \\
+0 & q\end{bmatrix}
+$$
+- **Swap**: swap even and odd (note: no dependency on q)
+$$
+Q_i = \begin{bmatrix}0 & 1 \\
+1 & 0\end{bmatrix}
+$$
 
-Thus one-level wavelet transform can be represented by repeated vector-matrix multiplication with $s_e$/$s_o$ being even/odd part transformed into Laurent polynomial and $a$/$d$ approximation/details (low-frequency/high-frequency)
+Thus one-level wavelet transform can be represented by repeated vector-matrix multiplication with $s_e$ / $s_o$ being even/odd part transformed into Laurent polynomial and $a$ / $d$ approximation/details (low-frequency/high-frequency)
 
 $$
 \begin{bmatrix} a & d \end{bmatrix} = \begin{bmatrix} s_e & s_o \end{bmatrix} \prod_{i=1}^n Q_i
