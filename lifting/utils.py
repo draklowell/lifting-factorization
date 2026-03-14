@@ -47,8 +47,8 @@ def to_vector(p, offset, size):
     return v
 
 
-def from_vector(v, offset, base_ring):
-    p = base_ring(0)
+def from_vector(v, offset, ring):
+    p = ring(0)
     z = p.parent().gen()
     for i in range(len(v)):
         p += v[i] * z ** (i + offset)

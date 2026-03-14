@@ -10,7 +10,7 @@ from lifting.utils import (
 
 
 class MatrixEstimator:
-    def __init__(self, H, output = None):
+    def __init__(self, H, output=None):
         self.H = H
         self.R = H.base_ring()
         self.F = self.R.base_ring()
@@ -43,7 +43,7 @@ class MatrixEstimator:
 
         self.size_out = self.k - self.l + self.beta - self.alpha + 1
 
-    def print(self, *args):
+    def _log(self, *args):
         if self.output is not None:
             self.output.write(" ".join(map(str, args)) + "\n")
 
@@ -95,30 +95,41 @@ class MatrixEstimator:
         norm_squared = sum(abs(c) ** 2 for c in v)
         return norm_squared
 
-    def get_target(self, eps=None):
-        det_H = det(self.H)
-
+    def _select_target_monomial(self, det_H, eps=None):
+        """Return ``(degree, coeff)`` of selected monomial from ``det_H``."""
         coeff_max = None
         degree_max = None
-        for m, c in det_H.monomial_coefficients().items():
+        for degree_cur, coeff_cur in det_H.monomial_coefficients().items():
             if eps is None:
-                if degree_max is None:
-                    degree_max = m
-                    coeff_max = c
-                elif abs(c) > abs(coeff_max):
-                    degree_max = m
-                    coeff_max = c
-
+                if degree_max is None or abs(coeff_cur) > abs(coeff_max):
+                    degree_max = degree_cur
+                    coeff_max = coeff_cur
                 continue
 
-            if abs(c) > eps:
+            if abs(coeff_cur) > eps:
                 if degree_max is not None:
                     raise ValueError(
                         "Multiple monomials with non-zero coefficients found."
                     )
 
-                degree_max = m
-                coeff_max = c
+                degree_max = degree_cur
+                coeff_max = coeff_cur
+
+        return degree_max, coeff_max
+
+    def _estimate_eps(self, residual):
+        eps = None
+        for _, coeff in residual.monomial_coefficients().items():
+            if eps is None:
+                eps = abs(coeff)
+            else:
+                eps = max(eps, abs(coeff))
+
+        return 0 if eps is None else eps
+
+    def get_target(self, eps=None):
+        det_H = det(self.H)
+        degree_max, coeff_max = self._select_target_monomial(det_H, eps=eps)
 
         z = det_H.parent().gen()
 
@@ -129,19 +140,11 @@ class MatrixEstimator:
 
         removed = det_H - value
         if eps is None:
-            eps = None
-            for m, c in removed.monomial_coefficients().items():
-                if eps is None:
-                    eps = abs(c)
-                else:
-                    eps = max(eps, abs(c))
+            eps = self._estimate_eps(removed)
 
-            if eps is None:
-                eps = 0
-
-        self.print(f"Selected monomial: z^{degree_max}, Coefficient: {float(coeff_max)}")
-        self.print(f"Estimated epsilon: {float(eps)}")
-        self.print(
+        self._log(f"Selected monomial: z^{degree_max}, Coefficient: {float(coeff_max)}")
+        self._log(f"Estimated epsilon: {float(eps)}")
+        self._log(
             f"Determinant approximation L2 distance: {sqrt(float(self.l2_norm2_poly(removed)))}"
         )
 
@@ -162,9 +165,9 @@ class MatrixEstimator:
         c = self.regression(V_g, v - v_p)
 
         v_new = v_p + V_g * c
-        self.print(f"Kernel DoF: {V_g.ncols()}")
+        self._log(f"Kernel DoF: {V_g.ncols()}")
         v_diff = v_new - v
-        self.print(
+        self._log(
             f"Row approximation L2 distance (non-normalized): {sqrt(float(self.l2_norm2_vector(v_diff)))}"
         )
 
@@ -184,8 +187,10 @@ class MatrixEstimator:
             factor = self.F(normalize_to) / norm_coeff
             v_new *= factor
 
-            self.print(f"Normalization factor: {float(factor)}")
-            self.print(f"Row approximation L2 distance (normalized): {sqrt(float(self.l2_norm2_vector(v_new - v)))}")
+            self._log(f"Normalization factor: {float(factor)}")
+            self._log(
+                f"Row approximation L2 distance (normalized): {sqrt(float(self.l2_norm2_vector(v_new - v)))}"
+            )
 
         return v_new
 

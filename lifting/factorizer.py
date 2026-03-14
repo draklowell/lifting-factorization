@@ -1,14 +1,17 @@
-from sage.all import *
 import math
+from enum import Enum
+
+from sage.all import *
+
 from lifting.utils import (
     degree,
-    min_degree
+    min_degree,
 )
 from lifting.division import (
     ldiv,
     ldivmod,
 )
-from enum import Enum
+
 
 class LiftingStep(Enum):
     PREDICT = 1
@@ -19,10 +22,10 @@ class LiftingStep(Enum):
 
 
 class Factorizer:
-    def __init__(self, output = None):
+    def __init__(self, output=None):
         self.output = output
 
-    def print(self, *args):
+    def _log(self, *args):
         if self.output is not None:
             self.output.write(" ".join(map(str, args)) + "\n")
 
@@ -30,7 +33,7 @@ class Factorizer:
         result = []
         if degree(a) < degree(b):
             a, b = b, a
-            result.append(0) # Swap term
+            result.append(0)  # Swap term.
 
         # $a_{i+1} = b_i,\quad b_{i+1} = a_i \bmod b_i, \quad q_{i+1} = a_i / b_i$
         while True:
@@ -40,12 +43,14 @@ class Factorizer:
                 raise ValueError("Remainder degree must be less than divisor degree")
 
             a = b
-            b = r       
+            b = r
             result.append(q)
-            self.print("Euclidean step computed:")
-            self.print(f" Degrees: |q|={degree(q)}, |r|={degree(r)}, |a|-|b|={degree(a) - degree(b)}")
+            self._log("Euclidean step computed:")
+            self._log(
+                f" Degrees: |q|={degree(q)}, |r|={degree(r)}, |a|-|b|={degree(a) - degree(b)}"
+            )
             l2q = sum(c**2 for c in q.coefficients())
-            self.print(f" L2 norm: ||q||={math.sqrt(l2q)}")
+            self._log(f" L2 norm: ||q||={math.sqrt(l2q)}")
 
             if degree(r) == -1:
                 break
@@ -61,14 +66,14 @@ class Factorizer:
         he, ho, ge, go = P[0, 0], P[1, 0], P[0, 1], P[1, 1]
         qs, a = self.euclidean(he, ho)
 
-        self.print("Euclidean pre-factorization computed")
+        self._log("Euclidean pre-factorization computed")
 
-        self.print(f"GCD degree: {min_degree(a)}")
+        self._log(f"GCD degree: {min_degree(a)}")
 
         #
         # $P^{(0)}_0 = \begin{bmatrix} K & 0 \\ 0 & 1/K \end{bmatrix}$
         #
-        P0 = matrix(R, 2, 2, [[a, 0], [0, 1/a]])
+        P0 = matrix(R, 2, 2, [[a, 0], [0, 1 / a]])
         for q in reversed(qs):
             #
             # $P^{(0)}_{i+1} = \begin{bmatrix} q_i & 1 \\ 1 & 0 \end{bmatrix} P^{(0)}_i$
@@ -76,7 +81,7 @@ class Factorizer:
             Q = matrix(R, 2, 2, [[q, 1], [1, 0]])
             P0 = Q * P0
 
-        self.print("P0 matrix reconstructed")
+        self._log("P0 matrix reconstructed")
 
         # $P^{(0)} = P^{(0)}_{n}$
 
@@ -95,14 +100,14 @@ class Factorizer:
         #
         # And same for odd part, thay have to be the same
         d = det(P0)
-        self.print("Determinant of a reconstructed P0:", d)
-        b = 1/d
+        self._log("Determinant of a reconstructed P0:", d)
+        b = 1 / d
 
         ge0, go0 = P0[0][1], P0[1][1]
-        se = ldiv(ge - b*ge0, he)
-        so = ldiv(go - b*go0, ho)
+        se = ldiv(ge - b * ge0, he)
+        so = ldiv(go - b * go0, ho)
         assert se == so
-        self.print("Recovering coefficient S computed")
+        self._log("Recovering coefficient S computed")
 
         return qs, a, se, b
 
@@ -126,8 +131,8 @@ class Factorizer:
 
             steps.append((R(0), LiftingStep.SWAP))
 
-        steps.append((a*a*s/b, LiftingStep.PREDICT))
+        steps.append((a * a * s / b, LiftingStep.PREDICT))
         steps.append((a, LiftingStep.SCALE_EVEN))
-        steps.append((b/a, LiftingStep.SCALE_ODD))
+        steps.append((b / a, LiftingStep.SCALE_ODD))
 
         return steps

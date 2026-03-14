@@ -1,10 +1,10 @@
+import json
+import sys
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
 from processor import Processor
-import sys
-import json
 
-wavelets = [
+WAVELETS = [
     "bior4.4",
     "bior2.2",
     "bior1.3",
@@ -15,17 +15,21 @@ wavelets = [
     "db20",
 ] + [f"db{i}" for i in range(2, 13)]
 
-def run_one(name):
+
+def run_one(name: str) -> None:
     processor = Processor(sys.stdout)
     result = processor.process(name)
 
     with open(f"coeffs/{name}.json", "w") as file:
-            json.dump(result, file, indent=4)
+        json.dump(result, file)
 
-with ProcessPoolExecutor() as ex:
-    futures = []
-    for name in wavelets:
-        futures.append(ex.submit(run_one, name))
 
-    for f in as_completed(futures):
-        f.result()
+def main() -> None:
+    with ProcessPoolExecutor() as executor:
+        futures = [executor.submit(run_one, name) for name in WAVELETS]
+        for future in as_completed(futures):
+            future.result()
+
+
+if __name__ == "__main__":
+    main()
