@@ -103,7 +103,7 @@ With $Q_i^{-1}$ being an inverse of $Q_i$ which is trivial to retrieve.
 
 ## 3. Factoring results
 
-We have successfully factorized all 106/106 FIR filter banks present in PyWavelets catalog. We have measured L2 error between original polyphase matrix $P$ and resulting matrices $P'_\mathbb{Q}$ (when multiplying in $\mathbb{Q}$-field) and $P'_{\text{FP64}}$ (when multiplying using `float64`):
+We have successfully factorized all 106/106 FIR filter banks present in PyWavelets catalog. We have measured L2 error between original polyphase matrix $P$ and resulting matrix $P'$:
 
 $$
 P' = \prod_{i=1}^nQ_i
@@ -117,7 +117,7 @@ $$
 
 With L2-norm defined for Laurent polynomials as L2-norm over vector of coefficients.
 
-The following error-rate of factorization was achieved:
+We consider two $P'$ reconstructed matrices: first by multiplication in $\mathbb{Q}$ field, and second by multiplication after converting all coefficients to `float64`. The following error-rate of factorization was achieved:
 
 ![Error histogram](./figs/l2_histogram.svg)
 
