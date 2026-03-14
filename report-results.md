@@ -53,26 +53,35 @@ $$
 Those steps can be described as right-multiplication by a matrix $Q$ that depends on polynomial $q$:
 
 - **Predict**: predict odd from even
+
 $$
 Q_i = \begin{bmatrix}1 & q_i \\
 0 & 1\end{bmatrix}
 $$
+
 - **Update**: update even from odd
+
 $$
 Q_i = \begin{bmatrix}1 & 0 \\
 q_i & 1\end{bmatrix}
 $$
+
 - **Scale Even**: scale even by a constant factor (note: $q$ is a zero-degree constant polynomial)
+
 $$
 Q_i = \begin{bmatrix}q & 0 \\
 0 & 1\end{bmatrix}
 $$
+
 - **Scale Odd**: scale odd by a constant factor (note: $q$ is a zero-degree constant polynomial)
+
 $$
 Q_i = \begin{bmatrix}1 & 0 \\
 0 & q\end{bmatrix}
 $$
+
 - **Swap**: swap even and odd (note: no dependency on q)
+
 $$
 Q_i = \begin{bmatrix}0 & 1 \\
 1 & 0\end{bmatrix}
