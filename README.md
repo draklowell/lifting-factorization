@@ -7,7 +7,7 @@
 
 ### Summary
 
-We have successfuly factored PyWavelets `float64`-valued filter banks into lifting steps over $\mathbb{Q}$ field. We have used algorithm of Sweldens et al. with several modifications. This factorization was done by a fully automatized pipeline built on top of SageMath computer algebra system.
+We have successfully factored PyWavelets `float64`-valued filter banks into lifting steps over $\mathbb{Q}$ field. We have used algorithm of Sweldens et al. with several modifications. This factorization was done by a fully automatized pipeline built on top of SageMath computer algebra system.
 
 ## 1. Notes
 
@@ -103,7 +103,9 @@ With $Q_i^{-1}$ being an inverse of $Q_i$ which is trivial to retrieve.
 
 ## 3. Factoring results
 
-We have successfully factorized all 106/106 FIR filter banks present in PyWavelets catalog. We have measured L2 error between original polyphase matrix $P$ and resulting matrix $P'$:
+We produced lifting decompositions for all 106/106 PyWavelets FIR filter banks, but the reconstruction accuracy varies substantially across families. The factorization is near-exact for many biorthogonal, reverse-biorthogonal, low-order Daubechies, and some coiflet/symlet filters, while higher-order Daubechies and dmey show large residuals.
+
+To validate factorization, we have measured L2 error between original polyphase matrix $P$ and resulting matrix $P'$:
 
 $$
 P' = \prod_{i=1}^nQ_i
@@ -164,7 +166,7 @@ The above table is colored as: `green` if $L_2 < 10^{-14}$, `yellow` if $L_2 < 1
 
 ![Error scatter](./figs/l2_scatter.svg)
 
-We can see that FP64 error is highly correlated with Q-field error, thus we can conclude that factorization is stable in terms of recovering original polyphase matrix, because almost all error comes from projecting input matrix into space of matrices with determinant exactly *1*, but not from converting all coefficient to `float64`.
+We can see that FP64 error is highly correlated with Q-field error for most wavelet families, suggesting that coefficient conversion to `float64` is usually not the main source of error. The main error appears to arise earlier in the pipeline, likely during projection of the input matrix to determinant exactly $1$.
 
 ![Error scatter](./figs/l2_scatter_coif.svg)
 
