@@ -94,6 +94,7 @@ $$
 $$
 
 And reconstruction given as:
+
 $$
 \begin{bmatrix} s_e & s_o \end{bmatrix} = \begin{bmatrix} a & d \end{bmatrix} \prod_{i=n}^1 Q_i^{-1}
 $$
