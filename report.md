@@ -8,5 +8,3 @@
 ### Abstract
 
 We present an algorithm for the automatic factorization of `float64`-valued filter banks into lifting steps over $\mathbb{Q}$ using [SageMath](). The algorithm is based on the approach of Sweldens et al., with several modifications.
-
----
