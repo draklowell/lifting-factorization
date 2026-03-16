@@ -206,9 +206,7 @@ class MatrixEstimator:
 
         d = estimator.get_target(eps=eps)
 
-        v_new = estimator.solve_system(
-            T, v_old, d, normalize_to=normalize_to
-        )
+        v_new = estimator.solve_system(T, v_old, d, normalize_to=normalize_to)
 
         ho_new, go_new = estimator.isomorphism2_inverse(v_new)
         return matrix(

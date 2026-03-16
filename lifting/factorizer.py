@@ -3,14 +3,8 @@ from enum import Enum
 
 from sage.all import *
 
-from lifting.utils import (
-    degree,
-    min_degree,
-)
-from lifting.division import (
-    ldiv,
-    ldivmod,
-)
+from lifting.division import ldiv, ldivmod
+from lifting.utils import degree, min_degree
 
 
 class LiftingStep(Enum):
@@ -127,7 +121,9 @@ class Factorizer:
         if len(qs) % 2 == 1:
             R = P.base_ring()
             if output is not None:
-                output.write("Adding swap step to handle odd number of Euclidean steps\n")
+                output.write(
+                    "Adding swap step to handle odd number of Euclidean steps\n"
+                )
 
             steps.append((R(0), LiftingStep.SWAP))
 

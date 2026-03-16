@@ -1,9 +1,9 @@
+from pywt import Wavelet
 from sage.all import *
 
 from lifting.factorizer import Factorizer, LiftingStep
 from lifting.matrix_estimator import MatrixEstimator
 from lifting.utils import max_degree, min_degree
-from pywt import Wavelet
 
 
 class ProxyOutput:
@@ -14,6 +14,7 @@ class ProxyOutput:
     def write(self, data: str):
         for line in data.splitlines():
             self.output.write(self.prefix + line + "\n")
+
 
 def split(filter_coeffs: list[float], R):
     F = R.base_ring()
@@ -29,6 +30,7 @@ def split(filter_coeffs: list[float], R):
 
     return even, odd
 
+
 def normalize(P, R, output=None):
     (z,) = R.gens()
     d = det(P)
@@ -36,18 +38,22 @@ def normalize(P, R, output=None):
     delay_up = delay // 2
     delay_down = delay - delay_up
 
-    P_norm = matrix(
-        R,
-        [
-            [z ** -delay_up, 0],
-            [0, z ** -delay_down],
-        ],
-    ) * P
+    P_norm = (
+        matrix(
+            R,
+            [
+                [z**-delay_up, 0],
+                [0, z**-delay_down],
+            ],
+        )
+        * P
+    )
 
     if output is not None:
         output.write(f"Determinant after meta-normalization: {det(P_norm)}\n")
 
     return P_norm, (delay_up, delay_down)
+
 
 def get_l2(a, b):
     """Compute coefficient-wise L2 distance between two 2x2 polynomial matrices."""
@@ -61,6 +67,7 @@ def get_l2(a, b):
             accum += (c_a - c_b) ** 2
 
     return sqrt(float(accum))
+
 
 class Processor:
     STEP_NAMES = {
@@ -86,8 +93,8 @@ class Processor:
         return matrix(
             ring,
             [
-                [z ** delay_up, 0],
-                [0, z ** delay_down],
+                [z**delay_up, 0],
+                [0, z**delay_down],
             ],
         )
 
@@ -180,7 +187,9 @@ class Processor:
         steps_fp64 = [(q.change_ring(RR), step) for q, step in steps]
         P_rec_fp64 = self._reconstruct(steps_fp64, R_fp64, delay_up, delay_down)
 
-        assert P_rec == P_est, "Reconstructed matrix does not match the estimated matrix"
+        assert (
+            P_rec == P_est
+        ), "Reconstructed matrix does not match the estimated matrix"
         output.write(f"Sanity check: OK\n")
 
         l2_fp64 = get_l2(P_err, P_rec_fp64)
