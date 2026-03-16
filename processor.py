@@ -25,7 +25,7 @@ def split(filter_coeffs: list[float], R):
         if i % 2 == 0:
             even += F(coeff) * z ** Integer(i // 2)
         else:
-            odd += F(coeff) * z ** Integer(i // 2)
+            odd += F(coeff) * z ** Integer((i + 1) // 2)
 
     return even, odd
 
