@@ -126,6 +126,7 @@ def matrix_ss(a, b, F=QQ):
         for m in set(coeffs_a.keys()) | set(coeffs_b.keys()):
             c_a = coeffs_a.get(m, 0)
             c_b = coeffs_b.get(m, 0)
-            accum += (c_a - c_b) ** 2
+            r = c_a - c_b
+            accum += r * r
 
-    return sqrt(float(accum))
+    return accum
