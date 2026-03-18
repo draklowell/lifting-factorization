@@ -1,8 +1,9 @@
 import json
 import sys
-from concurrent.futures import ProcessPoolExecutor, as_completed
 
-from processor import Processor
+import pywt
+
+from processor.processor import Processor
 
 WAVELETS = [
     "bior4.4",
@@ -16,19 +17,16 @@ WAVELETS = [
 ] + [f"db{i}" for i in range(2, 13)]
 
 
-def run_one(name: str) -> None:
-    processor = Processor(sys.stdout)
-    result = processor.process(name)
-
-    with open(f"coeffs/{name}.json", "w") as file:
-        json.dump(result, file)
-
-
 def main() -> None:
-    with ProcessPoolExecutor() as executor:
-        futures = [executor.submit(run_one, name) for name in WAVELETS]
-        for future in as_completed(futures):
-            future.result()
+    for name in WAVELETS:
+        print(f"### {name} ###")
+        wavelet = pywt.Wavelet(name)
+
+        processor = Processor(sys.stdout)
+        result = processor.process(wavelet.dec_lo, wavelet.dec_hi)
+
+        with open(f"coeffs/{name}.json", "w") as file:
+            json.dump(result, file)
 
 
 if __name__ == "__main__":

@@ -19,11 +19,15 @@ def try_solve(A, y):
     return v_p
 
 
-# Search for the longest suffix solution
-# $y = Ax$
-# If direction = True => first left then right
-# otherwise first right then left
 def find_solution(A, y, direction: bool = False):
+    """
+    Search for the longest symmetric solution
+    (i.e. a solution that satisfies Ax=y for the most
+    number of points from the left and from the right)
+
+    If direction = True => first left then right
+    otherwise first right then left
+    """
     x = None
     row_count = A.nrows()
     for span in range(1, row_count + 1):
@@ -33,6 +37,8 @@ def find_solution(A, y, direction: bool = False):
         head = longer if direction else shorter
         tail = row_count - (shorter if direction else longer)
 
+        # Fix needed: memory-heavy task copying and stacking
+        # matrices
         A_cur = A[:head].stack(A[tail:])
         y_cur = vector(tuple(y[:head]) + tuple(y[tail:]))
 
@@ -46,6 +52,11 @@ def find_solution(A, y, direction: bool = False):
 
 
 def ldivmod(a, b):
+    """
+    Perform polynomial division of a by b, that preserves symmetry,
+    returning the quotient and remainder.
+    """
+
     if degree(b) == -1:
         raise ZeroDivisionError("Cannot divide by zero polynomial.")
 
@@ -62,6 +73,8 @@ def ldivmod(a, b):
     )
     a_v = to_vector(a, min_degree(a), degree(a) + 1)
 
+    # Start eliminating from the
+    # longer side to preserve symmetry
     direction = -min_degree(a) > max_degree(a)
 
     q_v = find_solution(B, a_v, direction)
@@ -81,6 +94,9 @@ def ldivmod(a, b):
 
 
 def ldiv(a, b):
+    """
+    Perform polynomial division of a by b, returning the quotient.
+    """
     q, r = ldivmod(a, b)
     if degree(r) >= 0:
         raise ValueError(f"Division is not exact, non-zero remainder: r = {r} != 0")

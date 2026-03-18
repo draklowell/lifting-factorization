@@ -53,3 +53,11 @@ def from_vector(v, offset, ring):
     for i in range(len(v)):
         p += v[i] * z ** (i + offset)
     return p
+
+
+def vector_ss(v):
+    return sum(c**2 for c in v)
+
+
+def polynomial_ss(p):
+    return sum(c**2 for c in p.monomial_coefficients().values())
