@@ -1,10 +1,10 @@
-import json
 import os
 import sys
 
 import numpy as np
 from pywt import Wavelet, dwt
 
+import dtypes
 from lifting import LiftingScheme
 
 sys.set_int_max_str_digits(1000000)
@@ -16,9 +16,9 @@ def print_cmp(a, b, name):
     message = " " + name.upper() + ": "
     message = message + " " * (17 - len(message))
 
-    if err_mse < 1e-14:
+    if err_mse < 5e-6:
         message += f"\033[32m{err_mse:.2e}\033[0m"
-    elif err_mse < 1e-7:
+    elif err_mse < 1e-2:
         message += f"\033[33m{err_mse:.2e}\033[0m"
     else:
         message += f"\033[31m{err_mse:.2e}\033[0m"
@@ -27,19 +27,18 @@ def print_cmp(a, b, name):
 
 
 counter = 0
-for filename in os.listdir("coeffs-new/"):
-    if not filename.endswith(".json"):
+for filename in os.listdir("../coeffs-new/"):
+    if not filename.endswith("-fp64.json"):
         continue
 
-    wavelet = filename.removesuffix(".json")
+    wavelet = filename.removesuffix("-fp64.json")
     print(f"WAVELET: {wavelet}")
-
-    with open(f"coeffs/{filename}") as f:
-        data = json.load(f)
 
     wavelet = Wavelet(wavelet)
 
-    scheme = LiftingScheme.from_object(data, "symmetric")
+    scheme = LiftingScheme.from_file(
+        f"../coeffs-new/{filename}", "symmetric", dtype=dtypes.mixed_tf32xf32
+    )
 
     test_signal = np.random.normal(scale=1, size=(1001,))
 
@@ -49,7 +48,7 @@ for filename in os.listdir("coeffs-new/"):
     print_cmp(approx_dwt, approx_lifting, "approximation")
     print_cmp(details_dwt, details_lifting, "details")
 
-    data_lifting = scheme.inverse(approx_lifting.data, details_lifting.data)
+    data_lifting = scheme.inverse(approx_lifting, details_lifting)
     data_lifting = data_lifting[: len(test_signal)]
 
     print_cmp(test_signal, data_lifting, "reconstruction")

@@ -3,21 +3,25 @@ from typing import Any
 
 import numpy as np
 
+import dtypes
+
 
 class ShiftedArray:
     shift: int
     data: np.ndarray
+    dtype: dtypes.dtype
 
-    def __init__(self, data: np.ndarray, shift: int):
-        self.data = np.array(data, dtype=np.float64)
+    def __init__(self, data: np.ndarray, shift: int, dtype: dtypes.dtype):
+        self.data = np.array(data)
         self.shift = shift
+        self.dtype = dtype
 
     @property
     def end(self) -> int:
         return self.shift + len(self.data)
 
     @classmethod
-    def from_object(cls, obj: dict[str, Any]) -> "ShiftedArray":
+    def from_object(cls, obj: dict[str, Any], dtype: dtypes.dtype) -> "ShiftedArray":
         data = []
         for coeff in obj["coefficients"]:
             if isinstance(coeff, (int, float)):
@@ -25,21 +29,23 @@ class ShiftedArray:
             else:
                 data.append(coeff["numerator"] / coeff["denominator"])
 
-        return cls(data, obj["shift"])
+        return cls(data, obj["shift"], dtype)
 
     def __repr__(self):
         return f"ShiftedArray(data={self.data}, shift={self.shift})"
 
     def __mul__(self, other: "float | ShiftedArray") -> "ShiftedArray":
         if isinstance(other, (int, float)):
-            return ShiftedArray(self.data * other, self.shift)
+            return ShiftedArray(
+                self.dtype.mul(self.data, other), self.shift, self.dtype
+            )
 
         if not isinstance(other, ShiftedArray):
             return NotImplemented
 
         shift_new = self.shift + other.shift + min(len(self.data), len(other.data)) - 1
-        data_new = np.convolve(self.data, other.data, mode="valid")
-        return ShiftedArray(data_new, shift_new)
+        data_new = self.dtype.conv(self.data, other.data)
+        return ShiftedArray(data_new, shift_new, self.dtype)
 
     def __add__(self, other: "ShiftedArray") -> "ShiftedArray":
         if not isinstance(other, ShiftedArray):
@@ -50,12 +56,12 @@ class ShiftedArray:
 
         data1 = self.data[shift_new - self.shift : end_new - self.shift]
         data2 = other.data[shift_new - other.shift : end_new - other.shift]
-        data_new = data1 + data2
+        data_new = self.dtype.add(data1, data2)
 
-        return ShiftedArray(data_new, shift_new)
+        return ShiftedArray(data_new, shift_new, self.dtype)
 
     def __neg__(self) -> "ShiftedArray":
-        return ShiftedArray(-self.data, self.shift)
+        return ShiftedArray(-self.data, self.shift, self.dtype)
 
     def __sub__(self, other: "ShiftedArray") -> "ShiftedArray":
         return self + (-other)
@@ -164,22 +170,25 @@ class LiftingScheme:
         tap_size: int,
         steps: list[LiftingStep],
         delays: tuple[int, int],
+        dtype: dtypes.dtype_,
     ):
         self.mode = mode
         self.tap_size = tap_size
         self.steps = steps
         self.delays = delays
+        self.dtype = dtype
 
     @classmethod
     def from_object(
         cls,
         obj: dict[str, Any],
         mode: str,
+        dtype: dtypes.dtype_,
     ):
         steps = []
 
         for step in obj["steps"]:
-            kernel = ShiftedArray.from_object(step)
+            kernel = ShiftedArray.from_object(step, dtype=dtype)
 
             if step["type"] == "predict":
                 steps.append(LiftingStepPredict(kernel))
@@ -210,6 +219,7 @@ class LiftingScheme:
                 obj["delay"]["even"],
                 obj["delay"]["odd"],
             ),
+            dtype=dtype,
         )
 
     @classmethod
@@ -217,11 +227,12 @@ class LiftingScheme:
         cls,
         path: str,
         mode: str,
+        dtype: dtypes.dtype_,
     ):
         with open(path, "r") as f:
             obj = json.load(f)
 
-        return cls.from_object(obj, mode=mode)
+        return cls.from_object(obj, mode=mode, dtype=dtype)
 
     def pad(self, data: np.ndarray, shape: int) -> np.ndarray:
         if self.mode == "symmetric":
@@ -250,8 +261,8 @@ class LiftingScheme:
 
         # Shift when multiplying by kernel without
         # polyphase split
-        even = ShiftedArray(even, self.delays[0])
-        odd = ShiftedArray(odd, self.delays[1])
+        even = ShiftedArray(even, self.delays[0], self.dtype)
+        odd = ShiftedArray(odd, self.delays[1], self.dtype)
 
         for step in self.steps:
             even, odd = step.forward(even, odd)
@@ -272,8 +283,8 @@ class LiftingScheme:
         length = 2 * len(even) - L + 2
         direct_shift = L // 2
 
-        even = ShiftedArray(even, 0)
-        odd = ShiftedArray(odd, 0)
+        even = ShiftedArray(even, 0, self.dtype)
+        odd = ShiftedArray(odd, 0, self.dtype)
 
         for step in reversed(self.steps):
             even, odd = step.inverse(even, odd)
