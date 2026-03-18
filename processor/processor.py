@@ -30,7 +30,7 @@ class Processor:
         det_H0 = from_vector_y(y, estimator.spec)
         residual = det_H0 - det(H)
 
-        self.print(f"Selected determinant: {det_H0.change_ring(RR)}")
+        self.print(f"Selected determinant: {det_H0.change_ring(RDF)}")
         self.print(f"Estimated epsilon: {float(eps)}")
         self.print(
             f"Determinant approximation L2 distance: {sqrt(float(polynomial_ss(residual)))}"
@@ -95,8 +95,8 @@ class Processor:
         l2 = sqrt(float(matrix_ss(P, P_rec)))
         self.print(f"Reconstruction L2 distance in QQ mode: {l2}")
 
-        R_fp64 = LaurentPolynomialRing(RR, names=("z",))
-        steps_fp64 = [(q.change_ring(RR), step) for q, step in steps]
+        R_fp64 = LaurentPolynomialRing(RDF, names=("z",))
+        steps_fp64 = [(q.change_ring(RDF), step) for q, step in steps]
         P_rec_fp64 = reconstruct(steps_fp64, delays, R_fp64)
 
         l2_fp64 = sqrt(float(matrix_ss(P, P_rec_fp64)))
