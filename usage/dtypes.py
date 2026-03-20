@@ -1,4 +1,4 @@
-# From https://github.com/ke1rro/tt-wavelet/blob/b17988c7b25192cd7f96c13d475c24ccf52344cb/experiments/precision/dtypes.py
+# Based on https://github.com/ke1rro/tt-wavelet/blob/b17988c7b25192cd7f96c13d475c24ccf52344cb/experiments/precision/dtypes.py
 import numba as nb
 import numpy as np
 from numba import types

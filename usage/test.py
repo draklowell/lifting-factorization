@@ -27,17 +27,14 @@ def print_cmp(a, b, name):
 
 
 counter = 0
-for filename in os.listdir("../coeffs-new/"):
-    if not filename.endswith("-fp64.json"):
-        continue
-
-    wavelet = filename.removesuffix("-fp64.json")
+for filename in os.listdir("../coeffs/"):
+    wavelet = filename.removesuffix(".json")
     print(f"WAVELET: {wavelet}")
 
     wavelet = Wavelet(wavelet)
 
     scheme = LiftingScheme.from_file(
-        f"../coeffs-new/{filename}", "symmetric", dtype=dtypes.mixed_tf32xf32
+        f"../coeffs/{filename}", "symmetric", dtype=dtypes.float64
     )
 
     test_signal = np.random.normal(scale=1, size=(1001,))
