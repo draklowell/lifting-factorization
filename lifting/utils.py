@@ -1,4 +1,4 @@
-from sage.all import *
+from sage.all import matrix, vector
 
 
 def min_degree(p):

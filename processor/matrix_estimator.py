@@ -1,5 +1,3 @@
-from sage.all import *
-
 from lifting.matrix_estimation import (
     EstimationSpecification,
     build_solution_space,
@@ -48,12 +46,16 @@ class MatrixEstimator:
 
         return self.T, self.x_initial
 
-    def select_target_monomial(self, return_eps=False):
+    def select_target_monomial(self, return_eps=False, normalize_to=None):
         if self.stage != MatrixEstimationStage.SYSTEM_BUILT:
             raise ValueError("Invalid stage for target selection step")
 
         self.y, eps = select_target_monomial(
-            self.H, self.spec, eps=self.esp, return_eps=True
+            self.H,
+            self.spec,
+            eps=self.esp,
+            return_eps=True,
+            normalize_to=normalize_to,
         )
         self.stage = MatrixEstimationStage.TARGET_SELECTED
 
