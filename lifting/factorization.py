@@ -14,9 +14,9 @@ steps = pack(qs, a, s, b, P)
 
 from enum import Enum
 
-from sage.all import *
+from sage.all import det, matrix
 
-from lifting.division import ldiv, ldivmod
+from lifting.division import ldiv, ldivmod, ldivmod_candidates
 from lifting.utils import degree
 
 
@@ -81,6 +81,72 @@ def euclidean(a, b):
     return result, a
 
 
+def quotient_path_score(qs):
+    maximum_log2 = float("-inf")
+    accumulated_log2 = 0.0
+    total_taps = 0
+    for q in qs:
+        coefficients = q.monomial_coefficients()
+        total_taps += len(coefficients)
+        for coefficient in coefficients.values():
+            if coefficient == 0:
+                continue
+            magnitude = abs(coefficient)
+            magnitude_log2 = (
+                magnitude.numerator().nbits() - magnitude.denominator().nbits()
+            )
+            maximum_log2 = max(maximum_log2, magnitude_log2)
+            accumulated_log2 += max(0.0, magnitude_log2)
+    return maximum_log2, accumulated_log2, total_taps, len(qs)
+
+
+def euclidean_candidates(a, b, beam_width=16):
+    if beam_width < 1:
+        raise ValueError("Beam width must be positive")
+
+    initial_qs = []
+    if degree(a) < degree(b):
+        a, b = b, a
+        initial_qs.append(a.parent()(0))
+
+    active = [(a, b, initial_qs)]
+    completed = []
+    while active:
+        expanded = []
+        for current_a, current_b, qs in active:
+            for q, remainder in ldivmod_candidates(current_a, current_b):
+                candidate_qs = qs + [q]
+                if degree(remainder) == -1:
+                    completed.append((candidate_qs, current_b))
+                else:
+                    expanded.append((current_b, remainder, candidate_qs))
+
+        completed.sort(key=lambda candidate: quotient_path_score(candidate[0]))
+        del completed[beam_width:]
+        expanded.sort(key=lambda candidate: quotient_path_score(candidate[2]))
+        active = expanded[:beam_width]
+
+    if not completed:
+        raise ValueError("Laurent Euclidean search produced no complete path")
+    return completed
+
+
+def factorization_candidates(P, beam_width=16):
+    candidates = []
+    paths = [euclidean(P[0, 0], P[1, 0])]
+    for qs, a in euclidean_candidates(P[0, 0], P[1, 0], beam_width):
+        if any(qs == existing_qs for existing_qs, _ in paths):
+            continue
+        paths.append((qs, a))
+
+    for qs, a in paths:
+        P0 = reconstruct(qs, a)
+        s, b = recover(P, P0)
+        steps = pack(qs, a, s, b, P)
+        candidates.append(steps)
+    return candidates
+
+
 def reconstruct(qs, a):
     """
     Reconstruct the matrix P0 from the q factors and a, such that P0 has the form:
@@ -136,6 +202,51 @@ def pack(qs, a, s, b, P):
     steps.append((b / a, LiftingStep.SCALE_ODD))
 
     return steps
+
+
+def canonicalize_scale_delays(steps, delays):
+    """Move monomial scale delays into the leading delay matrix."""
+    adjusted = list(steps)
+    even_exponent = 0
+    odd_exponent = 0
+    ring = steps[0][0].parent()
+    z = ring.gen()
+
+    for index, (polynomial, step_type) in enumerate(adjusted):
+        if step_type not in {LiftingStep.SCALE_EVEN, LiftingStep.SCALE_ODD}:
+            continue
+        coefficients = polynomial.monomial_coefficients()
+        if len(coefficients) != 1:
+            raise ValueError("Scale step must contain one monomial")
+        exponent, coefficient = next(iter(coefficients.items()))
+        adjusted[index] = (ring(coefficient), step_type)
+        if step_type == LiftingStep.SCALE_EVEN:
+            even_exponent += exponent
+        else:
+            odd_exponent += exponent
+
+    if even_exponent + odd_exponent != 0:
+        raise ValueError("Scale monomial delays do not preserve determinant degree")
+
+    for index in range(len(adjusted) - 1, -1, -1):
+        polynomial, step_type = adjusted[index]
+        if step_type == LiftingStep.PREDICT:
+            adjusted[index] = (
+                polynomial * z ** (odd_exponent - even_exponent),
+                step_type,
+            )
+        elif step_type == LiftingStep.UPDATE:
+            adjusted[index] = (
+                polynomial * z ** (even_exponent - odd_exponent),
+                step_type,
+            )
+        elif step_type == LiftingStep.SWAP:
+            even_exponent, odd_exponent = odd_exponent, even_exponent
+
+    return adjusted, (
+        delays[0] + even_exponent,
+        delays[1] + odd_exponent,
+    )
 
 
 def factorize(P, normalize: bool = False):

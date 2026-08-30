@@ -11,9 +11,6 @@ x_particular, x_basis = build_solution_space(T, y)
 
 x = solve(x_initial, x_particular, x_basis)
 
-# Optional: normalize
-x = normalize(x, y, 1)
-
 H_new = reconstruct(H, x, spec)
 
 # Output: H_new
@@ -22,7 +19,7 @@ H_new = reconstruct(H, x, spec)
 from dataclasses import dataclass
 from typing import Any
 
-from sage.all import *
+from sage.all import det, matrix, vector
 
 from lifting.utils import (
     from_vector,
@@ -149,7 +146,11 @@ def build_system(H, spec=None):
 
 
 def select_target_monomial(
-    H, spec: EstimationSpecification, eps=None, return_eps: bool = False
+    H,
+    spec: EstimationSpecification,
+    eps=None,
+    return_eps: bool = False,
+    normalize_to=None,
 ):
     """
     Selet monomial in determinant for which the system from `build_system`
@@ -175,17 +176,18 @@ def select_target_monomial(
 
     R = det_H.parent()
 
-    if degree_max is None:
-        value = R(0)
-    else:
-        z = R.gen()
-        value = coeff_max * z**degree_max
-
     if eps is None:
-        residual = det_H - value
+        selected = R(0) if degree_max is None else coeff_max * R.gen() ** degree_max
+        residual = det_H - selected
         coeffs = list(map(abs, residual.monomial_coefficients().values()))
 
         eps = max(coeffs) if coeffs else 0
+
+    if degree_max is None:
+        value = R(0)
+    else:
+        coefficient = coeff_max if normalize_to is None else R.base_ring()(normalize_to)
+        value = coefficient * R.gen() ** degree_max
 
     if return_eps:
         return to_vector_y(value, spec), eps
@@ -259,15 +261,17 @@ def estimate_matrix(H, normalize_to=None, eps=None, return_eps=False):
 
     T, x_initial = build_system(H, spec)
 
-    y, eps = select_target_monomial(H, spec, eps=eps, return_eps=True)
+    y, eps = select_target_monomial(
+        H,
+        spec,
+        eps=eps,
+        return_eps=True,
+        normalize_to=normalize_to,
+    )
 
     x_particular, x_basis = build_solution_space(T, y)
 
     x = solve(x_initial, x_particular, x_basis)
-
-    # Optional: normalize
-    if normalize_to is not None:
-        x = normalize(x, y, normalize_to)
 
     H_new = reconstruct(H, x, spec)
 
