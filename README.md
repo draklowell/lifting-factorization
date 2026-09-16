@@ -1,9 +1,9 @@
 # Lifting Factorization of PyWavelets filter banks
 
-**Andrii Kryvyi** @ *Ukrainian Catholic University*
+**Andrii Kryvyi** @ *Ukrainian Catholic University*  <br/>
 **Nikita Lenyk** @ *Ukrainian Catholic University*
 
-**Correspondence:** kryvy.pn@ucu.edu.ua  <br/>
+**Correspondence:** kryvyi.pn@ucu.edu.ua, lenyk.pn@ucu.edu.ua <br/>
 **Date**: March 2026
 
 ### Summary
