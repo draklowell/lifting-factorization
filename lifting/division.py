@@ -1,4 +1,4 @@
-from sage.all import *
+from sage.all import vector
 
 from lifting.utils import (
     degree,
@@ -91,6 +91,52 @@ def ldivmod(a, b):
     ), "Remainder is not smaller than the divisor: degree(r) >= degree(b)"
 
     return q, r
+
+
+def ldivmod_candidates(a, b):
+    """
+    Return exact Laurent divisions obtained from every head/tail split.
+    """
+    if degree(b) == -1:
+        raise ZeroDivisionError("Cannot divide by zero polynomial.")
+
+    if degree(a) < degree(b):
+        return [(a.parent()(0), a)]
+
+    R = a.parent()
+    row_count = degree(a) + 1
+    quotient_size = degree(a) - degree(b) + 1
+    B = laurent_toeplitz(
+        b,
+        row_count,
+        quotient_size,
+        min_degree(b),
+    )
+    a_v = to_vector(a, min_degree(a), row_count)
+    candidates = []
+
+    for head in range(quotient_size + 1):
+        tail = quotient_size - head
+        tail_begin = row_count - tail
+        A_cur = B[:head].stack(B[tail_begin:])
+        y_cur = vector(tuple(a_v[:head]) + tuple(a_v[tail_begin:]))
+        q_v = try_solve(A_cur, y_cur)
+        if q_v is None:
+            continue
+
+        r_v = a_v - B * q_v
+        r = from_vector(r_v, min_degree(a), R)
+        q = from_vector(q_v, min_degree(a) - min_degree(b), R)
+        if degree(r) >= degree(b):
+            continue
+        if any(q == existing_q for existing_q, _ in candidates):
+            continue
+        assert a == b * q + r
+        candidates.append((q, r))
+
+    if not candidates:
+        raise ValueError("No valid Laurent division candidate found")
+    return candidates
 
 
 def ldiv(a, b):

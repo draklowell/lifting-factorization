@@ -1,6 +1,13 @@
-from sage.all import *
-
-from lifting.factorization import euclidean, normalize_det, pack, reconstruct, recover
+from lifting.factorization import (
+    canonicalize_scale_delays,
+    euclidean,
+    factorization_candidates,
+    normalize_det,
+    pack,
+    reconstruct,
+    recover,
+)
+from processor.utils import reconstruct as reconstruct_steps
 
 
 class FactorizerStage:
@@ -23,6 +30,7 @@ class Factorizer:
 
     def __init__(self, P):
         self.stage = FactorizerStage.NONE
+        self.original = P
         self.P = P
 
     def normalize(self):
@@ -42,6 +50,27 @@ class Factorizer:
         self.stage = FactorizerStage.EUCLIDEAN
 
         return self.qs, self.a
+
+    def build_candidates(self, beam_width=16):
+        if self.stage != FactorizerStage.NORMALIZED:
+            raise ValueError("Invalid stage for candidate factorization step")
+
+        candidates = []
+        for steps in factorization_candidates(self.P, beam_width=beam_width):
+            runtime_steps, runtime_delays = canonicalize_scale_delays(
+                steps,
+                self.delays,
+            )
+            assert (
+                reconstruct_steps(
+                    runtime_steps,
+                    runtime_delays,
+                    self.original.base_ring(),
+                )
+                == self.original
+            )
+            candidates.append((runtime_steps, runtime_delays))
+        return candidates
 
     def reconstruct(self):
         if self.stage != FactorizerStage.EUCLIDEAN:

@@ -1,32 +1,49 @@
+import argparse
 import json
 import sys
+from pathlib import Path
 
-import pywt
-
+from lifting.projection import ProjectionStrategy
 from processor.processor import Processor
 
-WAVELETS = [
-    "bior4.4",
-    "bior2.2",
-    "bior1.3",
-    "coif1",
-    "coif2",
-    "sym8",
-    "haar",
-    "db20",
-] + [f"db{i}" for i in range(2, 13)]
+
+def parse_arguments() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Factor an analysis FIR filter bank into lifting steps."
+    )
+    parser.add_argument(
+        "input",
+        type=Path,
+        help="JSON file containing low_pass and high_pass coefficient arrays",
+    )
+    parser.add_argument("--output", type=Path, help="output lifting JSON")
+    parser.add_argument(
+        "--projection",
+        choices=[strategy.value for strategy in ProjectionStrategy],
+        default=ProjectionStrategy.FIXED_ROW.value,
+    )
+    return parser.parse_args()
 
 
 def main() -> None:
-    for name in WAVELETS:
-        print(f"### {name} ###")
-        wavelet = pywt.Wavelet(name)
+    arguments = parse_arguments()
+    filter_bank = json.loads(arguments.input.read_text())
+    try:
+        low_pass = filter_bank["low_pass"]
+        high_pass = filter_bank["high_pass"]
+    except KeyError as error:
+        raise ValueError(f"Missing filter-bank field: {error.args[0]}") from error
 
-        processor = Processor(sys.stdout)
-        result = processor.process(wavelet.dec_lo, wavelet.dec_hi)
-
-        with open(f"coeffs/{name}.json", "w") as file:
-            json.dump(result, file)
+    scheme = Processor(sys.stderr).process(
+        low_pass,
+        high_pass,
+        projection_strategy=ProjectionStrategy(arguments.projection),
+    )
+    encoded = json.dumps(scheme, indent=2) + "\n"
+    if arguments.output is None:
+        sys.stdout.write(encoded)
+    else:
+        arguments.output.write_text(encoded)
 
 
 if __name__ == "__main__":

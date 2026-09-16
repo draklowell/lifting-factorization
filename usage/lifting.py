@@ -3,7 +3,7 @@ from typing import Any
 
 import numpy as np
 
-import dtypes
+from usage import dtypes
 
 
 class ShiftedArray:
@@ -249,10 +249,24 @@ class LiftingScheme:
 
         raise ValueError(f"Unsupported padding mode: {self.mode}")
 
-    def forward(self, data: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    @staticmethod
+    def peak_magnitude(*streams: ShiftedArray) -> float:
+        return max(
+            (
+                float(np.max(np.abs(stream.data)))
+                for stream in streams
+                if stream.data.size > 0
+            ),
+            default=0.0,
+        )
+
+    def apply_forward(
+        self, data: np.ndarray, measure_amplification: bool
+    ) -> tuple[np.ndarray, np.ndarray, float]:
         L = self.tap_size
         length = (len(data) + L - 1) // 2
         direct_shift = L // 2
+        input_peak = float(np.max(np.abs(data))) if data.size > 0 else 0.0
 
         data = self.pad(data, (L - 1, L - 1))
 
@@ -263,9 +277,12 @@ class LiftingScheme:
         # polyphase split
         even = ShiftedArray(even, self.delays[0], self.dtype)
         odd = ShiftedArray(odd, self.delays[1], self.dtype)
+        peak = self.peak_magnitude(even, odd)
 
         for step in self.steps:
             even, odd = step.forward(even, odd)
+            if measure_amplification:
+                peak = max(peak, self.peak_magnitude(even, odd))
 
         even_shift = even.shift - direct_shift
         odd_shift = odd.shift - direct_shift
@@ -276,18 +293,40 @@ class LiftingScheme:
         even = even.data[-even_shift : -even_shift + length]
         odd = odd.data[-odd_shift : -odd_shift + length]
 
+        amplification = peak / input_peak if input_peak > 0.0 else 0.0
+        return even, odd, amplification
+
+    def forward(self, data: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+        even, odd, _ = self.apply_forward(data, measure_amplification=False)
         return even, odd
 
-    def inverse(self, even: np.ndarray, odd: np.ndarray) -> np.ndarray:
+    def forward_with_amplification(
+        self, data: np.ndarray
+    ) -> tuple[np.ndarray, np.ndarray, float]:
+        return self.apply_forward(data, measure_amplification=True)
+
+    def apply_inverse(
+        self,
+        even: np.ndarray,
+        odd: np.ndarray,
+        measure_amplification: bool,
+    ) -> tuple[np.ndarray, float]:
         L = self.tap_size
         length = 2 * len(even) - L + 2
         direct_shift = L // 2
+        input_peak = max(
+            float(np.max(np.abs(even))) if even.size > 0 else 0.0,
+            float(np.max(np.abs(odd))) if odd.size > 0 else 0.0,
+        )
 
         even = ShiftedArray(even, 0, self.dtype)
         odd = ShiftedArray(odd, 0, self.dtype)
+        peak = self.peak_magnitude(even, odd)
 
         for step in reversed(self.steps):
             even, odd = step.inverse(even, odd)
+            if measure_amplification:
+                peak = max(peak, self.peak_magnitude(even, odd))
 
         even_shift = even.shift + self.delays[1] - direct_shift
         odd_shift = odd.shift + self.delays[0] - direct_shift
@@ -302,4 +341,14 @@ class LiftingScheme:
         data[1::2] = even
         data[::2] = odd
 
+        amplification = peak / input_peak if input_peak > 0.0 else 0.0
+        return data, amplification
+
+    def inverse(self, even: np.ndarray, odd: np.ndarray) -> np.ndarray:
+        data, _ = self.apply_inverse(even, odd, measure_amplification=False)
         return data
+
+    def inverse_with_amplification(
+        self, even: np.ndarray, odd: np.ndarray
+    ) -> tuple[np.ndarray, float]:
+        return self.apply_inverse(even, odd, measure_amplification=True)

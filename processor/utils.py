@@ -1,4 +1,4 @@
-from sage.all import *
+from sage.all import QQ, Integer, matrix
 
 from lifting.factorization import LiftingStep
 from lifting.utils import max_degree, min_degree
@@ -60,19 +60,26 @@ def reconstruct(steps, delay, R):
     return P
 
 
-def serialize_polynomial(q):
+def serialize_polynomial(q, coefficients_as_float: bool = False):
     shift = min_degree(q)
+    coefficients = q.monomial_coefficients()
     coeffs = []
     for degree_idx in range(min_degree(q), max_degree(q) + 1):
-        coeff = q.coefficient(degree_idx)
-        coeffs.append(
-            {
-                "numerator": int(coeff.numerator()),
-                "denominator": int(coeff.denominator()),
-            }
-        )
+        coeff = coefficients.get(degree_idx, q.base_ring()(0))
+        if coefficients_as_float:
+            coeffs.append(float(coeff))
+        else:
+            coeffs.append(
+                {
+                    "numerator": int(coeff.numerator()),
+                    "denominator": int(coeff.denominator()),
+                }
+            )
 
-    if coeffs[0]["numerator"] == 0:
+    leading_zero = (
+        coeffs[0] == 0.0 if coefficients_as_float else coeffs[0]["numerator"] == 0
+    )
+    if leading_zero:
         return {"shift": 0, "coefficients": []}
 
     return {"shift": shift, "coefficients": coeffs}
@@ -87,7 +94,13 @@ STEP_NAMES = {
 }
 
 
-def serialize_lifting_scheme(steps, delay, tap_size: int, metadata: dict | None = None):
+def serialize_lifting_scheme(
+    steps,
+    delay,
+    tap_size: int,
+    metadata: dict | None = None,
+    coefficients_as_float: bool = False,
+):
     result = {
         "tap_size": tap_size,
         "delay": {
@@ -101,7 +114,10 @@ def serialize_lifting_scheme(steps, delay, tap_size: int, metadata: dict | None 
         result["meta"] = metadata
 
     for q, step in steps:
-        q_serialized = serialize_polynomial(q)
+        q_serialized = serialize_polynomial(
+            q,
+            coefficients_as_float=coefficients_as_float,
+        )
         if len(q_serialized["coefficients"]) == 0 and step in {
             LiftingStep.PREDICT,
             LiftingStep.UPDATE,
